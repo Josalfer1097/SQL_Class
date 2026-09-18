@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Avatar, Umbra } from "./Personajes";
-import { acciones, useJuego, personajeDefault, PIELES, CABELLOS, COLORES_CABELLO, COLORES_OJOS, COLORES_ROPA, COLORES_CAPA, ATUENDOS, reinoDesbloqueado, nivelDesbloqueado, totalNiveles, type Personaje } from "../game/store";
+import { acciones, useJuego, personajeDefault, PIELES, CABELLOS, COLORES_CABELLO, COLORES_OJOS, COLORES_ROPA, COLORES_CAPA, ATUENDOS, CABEZAS, ROSTROS, SEXOS, CONJUNTOS, reinoDesbloqueado, nivelDesbloqueado, totalNiveles, type Personaje, type Conjunto } from "../game/store";
 import { REINOS, RANGOS, rangoDe, siguienteRango, porN, esJefe, UMBRA, frase } from "../game/mundo";
 import { leccionDe } from "../game/lecciones";
 
@@ -45,14 +45,15 @@ export function Intro() {
 /* ============================================================
    CREADOR DE PERSONAJE
    ============================================================ */
-type Pestana = "cuerpo" | "rostro" | "atuendo";
+type Pestana = "conjuntos" | "cuerpo" | "rostro" | "atuendo";
 
 export function Creador() {
   const j = useJuego();
   const [p, setP] = useState<Personaje>(j.personaje || personajeDefault());
   const [err, setErr] = useState("");
-  const [tab, setTab] = useState<Pestana>("cuerpo");
+  const [tab, setTab] = useState<Pestana>("conjuntos");
   const up = <K extends keyof Personaje>(k: K, v: Personaje[K]) => setP((prev) => ({ ...prev, [k]: v }));
+  const aplicarConjunto = (c: Conjunto) => setP((prev) => ({ ...prev, ...c.p }));
 
   function listo() {
     if (!p.nombre.trim()) { setErr("Un nombre. Hasta las tablas tienen uno."); return; }
@@ -60,15 +61,14 @@ export function Creador() {
   }
   function azar() {
     const el = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
+    const base = el(CONJUNTOS).p;
     setP((prev) => ({
-      ...prev,
-      silueta: el(["a", "b"] as const), piel: el(PIELES), cabello: el(CABELLOS),
-      colorCabello: el(COLORES_CABELLO), ojos: el(COLORES_OJOS),
-      atuendo: el(ATUENDOS).id, ropa: el(COLORES_ROPA), detalle: el(COLORES_ROPA),
-      capa: el(COLORES_CAPA), capucha: el(["arriba", "abajo"] as const),
-      hombrera: Math.random() > .5, brazaletes: Math.random() > .4,
-      accesorio: el(["ninguno", "ninguno", "lentes", "diadema", "cicatriz", "antifaz"] as const),
-      vello: el(["ninguno", "ninguno", "barba", "candado", "bigote"] as const)
+      ...prev, ...base,
+      sexo: el(["f", "m", "x"] as const),
+      complexion: el(["esbelta", "media", "ancha"] as const),
+      altura: 0.94 + Math.random() * 0.12,
+      piel: el(PIELES), cabello: el(CABELLOS), colorCabello: el(COLORES_CABELLO), ojos: el(COLORES_OJOS),
+      vello: el(["ninguno", "ninguno", "barba", "candado", "bigote", "perilla"] as const)
     }));
   }
 
@@ -81,7 +81,13 @@ export function Creador() {
           <div className="pedestal"><Avatar p={p} size={260} /></div>
           <div className="nombre-preview">{p.nombre || "Sin nombre"}</div>
           <div className="rango-preview">{RANGOS[0].titulo}</div>
-          <button className="btn gh peq" onClick={azar} style={{ marginTop: 12 }}>Al azar</button>
+          <div className="resumen-look">
+            <span>{atuendoActual.nombre}</span>
+            {p.cabeza !== "ninguna" && <span>{CABEZAS.find((c) => c.id === p.cabeza)!.nombre}</span>}
+            {p.rostro !== "ninguno" && <span>{ROSTROS.find((r) => r.id === p.rostro)!.nombre}</span>}
+            {p.capa !== "ninguna" && <span>con capa</span>}
+          </div>
+          <button className="btn gh peq" onClick={azar}>Sorprendeme</button>
         </div>
 
         <div className="creador-form">
@@ -95,17 +101,46 @@ export function Creador() {
           </label>
 
           <div className="tabs-creador">
-            {([["cuerpo", "Cuerpo"], ["rostro", "Rostro"], ["atuendo", "Atuendo"]] as [Pestana, string][]).map(([id, t]) => (
+            {([["conjuntos", "Conjuntos"], ["cuerpo", "Cuerpo"], ["rostro", "Rostro"], ["atuendo", "Equipo"]] as [Pestana, string][]).map(([id, t]) => (
               <button key={id} className={"tab-c " + (tab === id ? "on" : "")} onClick={() => setTab(id)}>{t}</button>
             ))}
           </div>
 
+          {tab === "conjuntos" && (
+            <>
+              <p className="ayuda-tab">Conjuntos armados. Elige uno y despues ajusta lo que quieras en las otras pestanas.</p>
+              <div className="conjuntos">
+                {CONJUNTOS.map((c) => {
+                  const activo = p.atuendo === c.p.atuendo && p.cabeza === c.p.cabeza;
+                  return (
+                    <button key={c.id} className={"conjunto " + (activo ? "on" : "")} onClick={() => aplicarConjunto(c)}>
+                      <span className="cj-mini"><Avatar p={{ ...p, ...c.p } as Personaje} size={74} animado={false} /></span>
+                      <span className="cj-txt">
+                        <span className="cj-n">{c.nombre}</span>
+                        <span className="cj-d">{c.nota}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
           {tab === "cuerpo" && (
             <>
-              <Opcion titulo="Silueta">
-                <button className={"chip-op " + (p.silueta === "a" ? "on" : "")} onClick={() => up("silueta", "a")}>Ancha</button>
-                <button className={"chip-op " + (p.silueta === "b" ? "on" : "")} onClick={() => up("silueta", "b")}>Estilizada</button>
+              <Opcion titulo="Sexo">
+                {SEXOS.map((sx) => <button key={sx.id} className={"chip-op " + (p.sexo === sx.id ? "on" : "")} onClick={() => up("sexo", sx.id)}>{sx.nombre}</button>)}
               </Opcion>
+              <Opcion titulo="Complexion">
+                {(["esbelta", "media", "ancha"] as const).map((c) => (
+                  <button key={c} className={"chip-op " + (p.complexion === c ? "on" : "")} onClick={() => up("complexion", c)}>{c}</button>
+                ))}
+              </Opcion>
+              <div className="opcion">
+                <span className="op-titulo">Altura</span>
+                <input className="rango" type="range" min={0.92} max={1.08} step={0.02} value={p.altura}
+                  onChange={(e) => up("altura", parseFloat(e.target.value))} />
+              </div>
               <Opcion titulo="Piel">{PIELES.map((c) => <Swatch key={c} c={c} on={p.piel === c} onClick={() => up("piel", c)} />)}</Opcion>
               <Opcion titulo="Cabello">{CABELLOS.map((c) => <button key={c} className={"chip-op " + (p.cabello === c ? "on" : "")} onClick={() => up("cabello", c)}>{c}</button>)}</Opcion>
               <Opcion titulo="Color de cabello">{COLORES_CABELLO.map((c) => <Swatch key={c} c={c} on={p.colorCabello === c} onClick={() => up("colorCabello", c)} />)}</Opcion>
@@ -116,37 +151,34 @@ export function Creador() {
             <>
               <Opcion titulo="Ojos">{COLORES_OJOS.map((c) => <Swatch key={c} c={c} on={p.ojos === c} onClick={() => up("ojos", c)} />)}</Opcion>
               <Opcion titulo="Vello facial">
-                {(["ninguno", "barba", "candado", "bigote"] as const).map((v) => (
+                {(["ninguno", "barba", "candado", "bigote", "perilla"] as const).map((v) => (
                   <button key={v} className={"chip-op " + (p.vello === v ? "on" : "")} onClick={() => up("vello", v)}>{v}</button>
                 ))}
               </Opcion>
-              <Opcion titulo="Accesorio">
-                {(["ninguno", "lentes", "diadema", "cicatriz", "antifaz"] as const).map((a) => (
-                  <button key={a} className={"chip-op " + (p.accesorio === a ? "on" : "")} onClick={() => up("accesorio", a)}>{a}</button>
-                ))}
+              <Opcion titulo="Mascara o anteojos">
+                {ROSTROS.map((r) => <button key={r.id} className={"chip-op " + (p.rostro === r.id ? "on" : "")} onClick={() => up("rostro", r.id)}>{r.nombre}</button>)}
               </Opcion>
+              {(p.cabeza === "yelmo" || p.cabeza === "celada" || p.cabeza === "calavera") && (
+                <p className="nota-inline">Con el casco puesto, el rostro casi no se ve.</p>
+              )}
             </>
           )}
 
           {tab === "atuendo" && (
             <>
               <Opcion titulo="Prenda">
-                {ATUENDOS.map((a) => (
-                  <button key={a.id} className={"chip-op " + (p.atuendo === a.id ? "on" : "")} onClick={() => up("atuendo", a.id)}>{a.nombre}</button>
-                ))}
+                {ATUENDOS.map((a) => <button key={a.id} className={"chip-op " + (p.atuendo === a.id ? "on" : "")} onClick={() => up("atuendo", a.id)}>{a.nombre}</button>)}
               </Opcion>
               <p className="nota-atuendo">{atuendoActual.nota}</p>
+              <Opcion titulo="Cabeza">
+                {CABEZAS.map((c) => <button key={c.id} className={"chip-op " + (p.cabeza === c.id ? "on" : "")} onClick={() => up("cabeza", c.id)}>{c.nombre}</button>)}
+              </Opcion>
               <Opcion titulo="Color principal">{COLORES_ROPA.map((c) => <Swatch key={c} c={c} on={p.ropa === c} onClick={() => up("ropa", c)} />)}</Opcion>
-              <Opcion titulo="Correas y fajin">{COLORES_ROPA.map((c) => <Swatch key={"d" + c} c={c} on={p.detalle === c} onClick={() => up("detalle", c)} />)}</Opcion>
+              <Opcion titulo="Correas y detalles">{COLORES_ROPA.map((c) => <Swatch key={"d" + c} c={c} on={p.detalle === c} onClick={() => up("detalle", c)} />)}</Opcion>
               <Opcion titulo="Capa">
                 {COLORES_CAPA.map((c) => c === "ninguna"
                   ? <button key={c} className={"chip-op " + (p.capa === c ? "on" : "")} onClick={() => up("capa", c)}>sin capa</button>
                   : <Swatch key={c} c={c} on={p.capa === c} onClick={() => up("capa", c)} />)}
-              </Opcion>
-              <Opcion titulo="Capucha">
-                <button className={"chip-op " + (p.capucha === "arriba" ? "on" : "")} onClick={() => up("capucha", "arriba")}>puesta</button>
-                <button className={"chip-op " + (p.capucha === "abajo" ? "on" : "")} onClick={() => up("capucha", "abajo")}>abajo</button>
-                {p.atuendo === "guardia" && <span className="nota-inline">el guardia no usa capucha</span>}
               </Opcion>
               <Opcion titulo="Extras">
                 <button className={"chip-op " + (p.hombrera ? "on" : "")} onClick={() => up("hombrera", !p.hombrera)}>hombreras</button>

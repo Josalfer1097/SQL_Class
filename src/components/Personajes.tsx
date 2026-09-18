@@ -1,18 +1,23 @@
 import type { Personaje } from "../game/store";
 
 /* ============================================================
-   AVATAR DEL JUGADOR — SVG por capas, en este orden:
-   aura · sombra · capa · piernas · cabello trasero · torso · atuendo
-   · brazos · cabeza · rostro · cabello frontal · capucha · accesorios
+   AVATAR DEL JUGADOR — capas, de atras hacia adelante:
+   aura · sombra · capa · piernas · cabello trasero · torso+atuendo
+   · brazos · hombreras · cabeza · rostro · cabello frontal · casco · mascara
    ============================================================ */
 export function Avatar({ p, size = 220, animado = true }: { p: Personaje; size?: number; animado?: boolean }) {
-  const w = p.silueta === "a" ? 1 : 0.86;            // factor de anchura
+  const w = p.complexion === "ancha" ? 1.06 : p.complexion === "esbelta" ? 0.84 : 0.95;
+  const h = p.altura || 1;
   const osc = sombra(p.ropa);
   const det = p.detalle;
   const detOsc = sombra(p.detalle);
-  const capuchaArriba = p.capucha === "arriba" && p.atuendo !== "guardia";
+  const tapaPelo = p.cabeza === "capucha" || p.cabeza === "capuchaPico" || p.cabeza === "yelmo" || p.cabeza === "celada" || p.cabeza === "turbante" || p.cabeza === "calavera";
   const id = "av" + Math.abs(hash(JSON.stringify(p))).toString(36);
   const conCapa = p.capa !== "ninguna";
+  /* el sexo ajusta hombros, cintura y rasgos, sin caricaturizar */
+  const hombro = p.sexo === "m" ? 1.06 : p.sexo === "f" ? 0.94 : 1;
+  const cintura = p.sexo === "f" ? 0.9 : p.sexo === "m" ? 1.02 : 0.96;
+  const cara = p.sexo === "m" ? 1.03 : p.sexo === "f" ? 0.96 : 1;
 
   return (
     <svg viewBox="0 0 200 270" width={size} height={(size * 270) / 200} className={animado ? "avatar flota" : "avatar"} aria-label={p.nombre || "personaje"}>
@@ -25,252 +30,432 @@ export function Avatar({ p, size = 220, animado = true }: { p: Personaje; size?:
           <stop offset="0%" stopColor={p.ropa} />
           <stop offset="100%" stopColor={osc} />
         </linearGradient>
+        <linearGradient id={id + "m"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#C9CDD6" />
+          <stop offset="45%" stopColor="#8F97A6" />
+          <stop offset="100%" stopColor="#5A6170" />
+        </linearGradient>
       </defs>
 
       <ellipse cx="100" cy="150" rx="86" ry="110" fill={`url(#${id}g)`} />
       <ellipse cx="100" cy="257" rx={44 * w} ry="7" fill="#000" opacity=".38" />
 
-      {/* ---------- capa, detras de todo ---------- */}
-      {conCapa && (
-        <>
-          <path d={`M ${100 - 40 * w} 122 Q 100 114 ${100 + 40 * w} 122 L ${100 + 54 * w} 244 Q 100 252 ${100 - 54 * w} 244 Z`} fill={sombra(p.capa, .8)} />
-          <path d={`M ${100 - 40 * w} 122 Q 100 130 ${100 + 40 * w} 122 L ${100 + 46 * w} 200 Q 100 194 ${100 - 46 * w} 200 Z`} fill={p.capa} opacity=".55" />
-        </>
-      )}
+      <g transform={`translate(100 262) scale(${h}) translate(-100 -262)`}>
+        {conCapa && (
+          <>
+            <path d={`M ${100 - 40 * w * hombro} 114 Q 100 106 ${100 + 40 * w * hombro} 114 L ${100 + 54 * w} 244 Q 100 252 ${100 - 54 * w} 244 Z`} fill={sombra(p.capa, .78)} />
+            <path d={`M ${100 - 40 * w * hombro} 114 Q 100 122 ${100 + 40 * w * hombro} 114 L ${100 + 46 * w} 196 Q 100 190 ${100 - 46 * w} 196 Z`} fill={p.capa} opacity=".5" />
+          </>
+        )}
 
-      {/* ---------- piernas y botas ---------- */}
-      <rect x={100 - 25 * w} y="192" width={21 * w} height="50" rx="7" fill={detOsc} />
-      <rect x={100 + 4 * w} y="192" width={21 * w} height="50" rx="7" fill={detOsc} />
-      <path d={`M ${100 - 29 * w} 230 h ${27 * w} v 18 a 4 4 0 0 1 -4 4 h ${-19 * w} a 4 4 0 0 1 -4 -4 Z`} fill="#231A2E" />
-      <path d={`M ${100 + 2 * w} 230 h ${27 * w} v 18 a 4 4 0 0 1 -4 4 h ${-19 * w} a 4 4 0 0 1 -4 -4 Z`} fill="#231A2E" />
-      <rect x={100 - 29 * w} y="229" width={27 * w} height="4.5" rx="2" fill={det} />
-      <rect x={100 + 2 * w} y="229" width={27 * w} height="4.5" rx="2" fill={det} />
+        {/* piernas y botas */}
+        <rect x={100 - 25 * w} y="192" width={21 * w} height="50" rx="7" fill={detOsc} />
+        <rect x={100 + 4 * w} y="192" width={21 * w} height="50" rx="7" fill={detOsc} />
+        <path d={`M ${100 - 29 * w} 230 h ${27 * w} v 18 a 4 4 0 0 1 -4 4 h ${-19 * w} a 4 4 0 0 1 -4 -4 Z`} fill="#231A2E" />
+        <path d={`M ${100 + 2 * w} 230 h ${27 * w} v 18 a 4 4 0 0 1 -4 4 h ${-19 * w} a 4 4 0 0 1 -4 -4 Z`} fill="#231A2E" />
+        <rect x={100 - 29 * w} y="229" width={27 * w} height="4.5" rx="2" fill={det} />
+        <rect x={100 + 2 * w} y="229" width={27 * w} height="4.5" rx="2" fill={det} />
 
-      {/* ---------- cabello por detras ---------- */}
-      <CabelloTrasero estilo={p.cabello} color={p.colorCabello} oculto={capuchaArriba} />
+        <CabelloTrasero estilo={p.cabello} color={p.colorCabello} oculto={tapaPelo} />
 
-      {/* ---------- torso y atuendo ---------- */}
-      <Atuendo tipo={p.atuendo} w={w} ropa={p.ropa} osc={osc} det={det} detOsc={detOsc} grad={`url(#${id}t)`} />
+        <Atuendo tipo={p.atuendo} w={w} hombro={hombro} cintura={cintura} ropa={p.ropa} osc={osc} det={det} detOsc={detOsc}
+          grad={`url(#${id}t)`} metal={`url(#${id}m)`} />
 
-      {/* ---------- brazos pegados al cuerpo ---------- */}
-      <Brazos w={w} ropa={p.ropa} osc={osc} piel={p.piel} det={det} brazaletes={p.brazaletes} />
+        <Brazos w={w} hombro={hombro} ropa={p.ropa} osc={osc} piel={p.piel} det={det} brazaletes={p.brazaletes} metal={`url(#${id}m)`} atuendo={p.atuendo} />
 
-      {(p.atuendo === "asesino" || p.atuendo === "sombra") && p.brazaletes && <HojaOculta x={100 - 46 * w} y={186} w={w} det={p.detalle} />}
+        {(p.atuendo === "asesino" || p.atuendo === "sombra") && p.brazaletes && <HojaOculta x={100 - 46 * w} y={186} w={w} det={p.detalle} />}
 
-      {/* ---------- hombreras ---------- */}
-      {p.hombrera && (
-        <>
-          <path d={`M ${100 - 47 * w} 116 q ${-11 * w} 14 ${-4 * w} 28 q ${15 * w} 5 ${23 * w} -6 Z`} fill={det} />
-          <path d={`M ${100 + 47 * w} 116 q ${11 * w} 14 ${4 * w} 28 q ${-15 * w} 5 ${-23 * w} -6 Z`} fill={detOsc} />
-          <path d={`M ${100 - 47 * w} 124 q ${-7 * w} 9 ${-3 * w} 17`} stroke={detOsc} strokeWidth="1.6" fill="none" />
-          <path d={`M ${100 + 47 * w} 124 q ${7 * w} 9 ${3 * w} 17`} stroke={det} strokeWidth="1.6" fill="none" opacity=".5" />
-        </>
-      )}
+        {p.hombrera && <Hombreras w={w} hombro={hombro} det={det} detOsc={detOsc} metal={`url(#${id}m)`} atuendo={p.atuendo} />}
 
-      {/* ---------- cabeza ---------- */}
-      <rect x="92" y="96" width="16" height="20" rx="5" fill={sombra(p.piel, .82)} />
-      <ellipse cx="100" cy="66" rx="32" ry="35" fill={p.piel} />
-      <ellipse cx="69" cy="70" rx="5.5" ry="7.5" fill={p.piel} />
-      <ellipse cx="131" cy="70" rx="5.5" ry="7.5" fill={p.piel} />
+        {/* cabeza */}
+        <rect x="92" y="96" width="16" height="20" rx="5" fill={sombra(p.piel, .82)} />
+        <ellipse cx="100" cy="66" rx={32 * cara} ry={35 * cara} fill={p.piel} />
+        <ellipse cx={100 - 31 * cara} cy="70" rx="5.5" ry="7.5" fill={p.piel} />
+        <ellipse cx={100 + 31 * cara} cy="70" rx="5.5" ry="7.5" fill={p.piel} />
 
-      {/* ---------- rostro ---------- */}
-      <Ojos color={p.ojos} />
-      <path d="M 97 74 q 3 3 6 0" stroke={sombra(p.piel, .8)} strokeWidth="1.8" strokeLinecap="round" fill="none" />
-      <path d="M 91 84 Q 100 91 109 84" stroke={sombra(p.piel, .72)} strokeWidth="2.4" strokeLinecap="round" fill="none" />
-      <circle cx="83" cy="79" r="4.2" fill="#FF7A9A" opacity=".3" />
-      <circle cx="117" cy="79" r="4.2" fill="#FF7A9A" opacity=".3" />
-      <Vello tipo={p.vello} color={p.colorCabello} />
-      {p.accesorio === "cicatriz" && <path d="M 112 52 L 120 72" stroke={sombra(p.piel, .68)} strokeWidth="2.2" strokeLinecap="round" />}
+        <Ojos color={p.ojos} sexo={p.sexo} />
+        <path d="M 97 74 q 3 3 6 0" stroke={sombra(p.piel, .8)} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+        <path d="M 91 84 Q 100 91 109 84" stroke={sombra(p.piel, .72)} strokeWidth="2.4" strokeLinecap="round" fill="none" />
+        <circle cx="83" cy="79" r="4.2" fill="#FF7A9A" opacity=".3" />
+        <circle cx="117" cy="79" r="4.2" fill="#FF7A9A" opacity=".3" />
+        <Vello tipo={p.vello} color={p.colorCabello} />
 
-      {/* ---------- cabello frontal: nunca tapa los ojos ---------- */}
-      <CabelloFrontal estilo={p.cabello} color={p.colorCabello} oculto={capuchaArriba} />
+        <CabelloFrontal estilo={p.cabello} color={p.colorCabello} oculto={tapaPelo} />
 
-      {/* ---------- capucha por encima de todo ---------- */}
-      {capuchaArriba && <Capucha tipo={p.atuendo} ropa={p.ropa} osc={osc} det={det} w={w} />}
-
-      {/* ---------- accesorios del rostro ---------- */}
-      {p.accesorio === "lentes" && (
-        <g>
-          <circle cx="88" cy="68" r="9" fill="#0A0710" opacity=".18" />
-          <circle cx="112" cy="68" r="9" fill="#0A0710" opacity=".18" />
-          <circle cx="88" cy="68" r="9" fill="none" stroke="#2A2035" strokeWidth="2.2" />
-          <circle cx="112" cy="68" r="9" fill="none" stroke="#2A2035" strokeWidth="2.2" />
-          <path d="M 97 68 L 103 68" stroke="#2A2035" strokeWidth="2.2" />
-        </g>
-      )}
-      {p.accesorio === "diadema" && (
-        <>
-          <path d="M 72 50 Q 100 36 128 50" stroke={det} strokeWidth="5.5" strokeLinecap="round" fill="none" />
-          <circle cx="100" cy="41" r="4" fill="#FFB05C" />
-        </>
-      )}
-      {p.accesorio === "antifaz" && <path d="M 73 62 Q 100 55 127 62 L 125 76 Q 100 70 75 76 Z" fill="#1B1220" opacity=".88" />}
+        <Cabeza tipo={p.cabeza} ropa={p.ropa} osc={osc} det={det} detOsc={detOsc} w={w} metal={`url(#${id}m)`} piel={p.piel} />
+        <Rostro tipo={p.rostro} det={det} ropa={p.ropa} />
+      </g>
     </svg>
   );
 }
 
+/* ---------- hombreras segun el atuendo ---------- */
+function Hombreras({ w, hombro, det, detOsc, metal, atuendo }:
+  { w: number; hombro: number; det: string; detOsc: string; metal: string; atuendo: string }) {
+  const L = 100 - 47 * w * hombro, R = 100 + 47 * w * hombro;
+  const duro = atuendo === "placas" || atuendo === "guardia" || atuendo === "diablo";
+  if (duro) return (
+    <g>
+      <path d={`M ${L} 112 q ${-13 * w} 16 ${-5 * w} 32 q ${18 * w} 6 ${26 * w} -8 Z`} fill={metal} />
+      <path d={`M ${R} 112 q ${13 * w} 16 ${5 * w} 32 q ${-18 * w} 6 ${-26 * w} -8 Z`} fill={metal} />
+      <path d={`M ${L - 9 * w} 126 q ${9 * w} 8 ${19 * w} 6`} stroke={detOsc} strokeWidth="2" fill="none" />
+      <path d={`M ${R + 9 * w} 126 q ${-9 * w} 8 ${-19 * w} 6`} stroke={detOsc} strokeWidth="2" fill="none" />
+      {atuendo === "diablo" && (<>
+        <circle cx={L - 4 * w} cy="130" r="3" fill="#FF6B35" />
+        <circle cx={R + 4 * w} cy="130" r="3" fill="#FF6B35" />
+      </>)}
+    </g>
+  );
+  return (
+    <g>
+      <path d={`M ${L} 114 q ${-11 * w} 14 ${-4 * w} 28 q ${15 * w} 5 ${23 * w} -6 Z`} fill={det} />
+      <path d={`M ${R} 114 q ${11 * w} 14 ${4 * w} 28 q ${-15 * w} 5 ${-23 * w} -6 Z`} fill={detOsc} />
+      <path d={`M ${L} 122 q ${-7 * w} 9 ${-3 * w} 17`} stroke={detOsc} strokeWidth="1.6" fill="none" />
+      <path d={`M ${R} 122 q ${7 * w} 9 ${3 * w} 17`} stroke={det} strokeWidth="1.6" fill="none" opacity=".5" />
+    </g>
+  );
+}
+
+/* ---------- cascos, capuchas y tocados ---------- */
+function Cabeza({ tipo, ropa, osc, det, detOsc, w, metal, piel }:
+  { tipo: string; ropa: string; osc: string; det: string; detOsc: string; w: number; metal: string; piel: string }) {
+  switch (tipo) {
+    case "capucha": case "capuchaPico": {
+      const pico = tipo === "capuchaPico";
+      return (
+        <g>
+          <path d={pico
+            ? "M 100 12 Q 62 24 62 78 Q 64 92 70 96 Q 66 50 82 40 Q 91 33 100 33 Q 109 33 118 40 Q 134 50 130 96 Q 136 92 138 78 Q 138 24 100 12 Z"
+            : "M 100 18 Q 64 30 64 78 Q 66 92 72 96 Q 68 52 84 43 Q 92 38 100 38 Q 108 38 116 43 Q 132 52 128 96 Q 134 92 136 78 Q 136 30 100 18 Z"}
+            fill={ropa} />
+          <path d={`M 66 84 Q 58 108 ${100 - 40 * w} 128 L ${100 - 26 * w} 124 Q 70 106 74 84 Z`} fill={osc} />
+          <path d={`M 134 84 Q 142 108 ${100 + 40 * w} 128 L ${100 + 26 * w} 124 Q 130 106 126 84 Z`} fill={osc} />
+          <path d="M 72 70 Q 72 42 100 38 Q 128 42 128 70 Q 120 48 100 46 Q 80 48 72 70 Z" fill="#0A0710" opacity=".5" />
+          <path d={pico ? "M 70 96 Q 66 50 82 40 Q 91 33 100 33 Q 109 33 118 40 Q 134 50 130 96" : "M 72 96 Q 68 52 84 43 Q 92 38 100 38 Q 108 38 116 43 Q 132 52 128 96"}
+            stroke={det} strokeWidth="2.4" fill="none" opacity=".85" />
+          {pico && <path d="M 100 12 Q 116 20 112 40 Q 106 27 96 25 Z" fill={det} />}
+        </g>
+      );
+    }
+    case "yelmo": return (
+      <g>
+        <path d="M 68 66 Q 68 26 100 24 Q 132 26 132 66 L 132 78 L 68 78 Z" fill={metal} />
+        <path d="M 68 78 L 132 78 L 132 86 Q 100 92 68 86 Z" fill={det} />
+        <path d="M 100 24 L 100 78" stroke={detOsc} strokeWidth="2.5" />
+        <path d="M 96 40 L 104 40 L 104 72 L 96 72 Z" fill="#0A0710" opacity=".75" />
+        <path d="M 74 56 Q 68 58 66 62" stroke={detOsc} strokeWidth="2" fill="none" />
+        <path d="M 126 56 Q 132 58 134 62" stroke={detOsc} strokeWidth="2" fill="none" />
+      </g>
+    );
+    case "celada": return (
+      <g>
+        <path d="M 66 64 Q 66 22 100 20 Q 134 22 134 64 L 134 92 Q 100 100 66 92 Z" fill={metal} />
+        <path d="M 66 56 Q 100 50 134 56 L 134 64 Q 100 58 66 64 Z" fill={detOsc} opacity=".7" />
+        {[0, 1, 2].map((i) => <path key={i} d={`M 76 ${72 + i * 7} L 124 ${72 + i * 7}`} stroke="#0A0710" strokeWidth="3" opacity=".85" />)}
+        <path d="M 72 62 Q 100 56 128 62" stroke="#0A0710" strokeWidth="5" fill="none" />
+        <path d="M 100 20 Q 106 12 100 4 Q 94 12 100 20 Z" fill={det} />
+        <path d="M 100 20 L 100 56" stroke={detOsc} strokeWidth="2" />
+      </g>
+    );
+    case "corona": return (
+      <g>
+        <path d="M 70 46 L 76 22 L 86 38 L 100 16 L 114 38 L 124 22 L 130 46 Z" fill="#D9A441" />
+        <path d="M 68 46 h 64 v 9 h -64 Z" fill="#C08B2E" />
+        <circle cx="100" cy="26" r="3.5" fill="#FF3B5C" />
+        <circle cx="79" cy="32" r="2.5" fill="#2DD4A7" />
+        <circle cx="121" cy="32" r="2.5" fill="#7CD5FF" />
+      </g>
+    );
+    case "diadema": return (
+      <g>
+        <path d="M 72 50 Q 100 36 128 50" stroke={det} strokeWidth="5.5" strokeLinecap="round" fill="none" />
+        <circle cx="100" cy="41" r="4" fill="#FFB05C" />
+      </g>
+    );
+    case "sombrero": return (
+      <g>
+        <ellipse cx="100" cy="54" rx="52" ry="11" fill={sombra(det, .8)} />
+        <ellipse cx="100" cy="52" rx="52" ry="10" fill={det} />
+        <path d="M 78 52 Q 76 22 100 20 Q 124 22 122 52 Z" fill={det} />
+        <path d="M 78 46 Q 100 40 122 46 L 122 52 Q 100 46 78 52 Z" fill={sombra(det, .65)} />
+        <path d="M 108 20 q 10 6 12 18" stroke={ropa} strokeWidth="3" fill="none" strokeLinecap="round" />
+      </g>
+    );
+    case "turbante": return (
+      <g>
+        <path d="M 66 62 Q 64 26 100 22 Q 136 26 134 62 Q 118 48 100 48 Q 82 48 66 62 Z" fill={ropa} />
+        <path d="M 68 54 Q 100 40 132 54" stroke={det} strokeWidth="5" fill="none" />
+        <path d="M 70 44 Q 100 30 130 44" stroke={sombra(ropa, .72)} strokeWidth="4" fill="none" />
+        <circle cx="100" cy="30" r="4" fill={det} />
+        <path d="M 130 58 q 14 18 8 40 q -8 -14 -16 -26 Z" fill={ropa} opacity=".9" />
+      </g>
+    );
+    case "cuernos": return (
+      <g>
+        <path d="M 74 44 Q 60 28 62 10 Q 76 22 82 42 Z" fill="#3A1410" />
+        <path d="M 126 44 Q 140 28 138 10 Q 124 22 118 42 Z" fill="#3A1410" />
+        <path d="M 74 44 Q 64 30 64 16" stroke="#D9483B" strokeWidth="1.6" fill="none" opacity=".7" />
+        <path d="M 126 44 Q 136 30 136 16" stroke="#D9483B" strokeWidth="1.6" fill="none" opacity=".7" />
+        <path d="M 72 48 Q 100 36 128 48" stroke="#3A1410" strokeWidth="6" strokeLinecap="round" fill="none" />
+        <circle cx="100" cy="42" r="4" fill="#FF6B35" />
+      </g>
+    );
+    case "calavera": return (
+      <g>
+        <path d="M 68 58 Q 68 20 100 18 Q 132 20 132 58 Q 132 74 122 80 L 78 80 Q 68 74 68 58 Z" fill="#D8D2C4" />
+        <ellipse cx="86" cy="56" rx="9" ry="11" fill="#0A0710" />
+        <ellipse cx="114" cy="56" rx="9" ry="11" fill="#0A0710" />
+        <path d="M 100 64 L 95 76 L 105 76 Z" fill="#0A0710" />
+        {[0, 1, 2, 3].map((i) => <path key={i} d={`M ${86 + i * 7} 80 L ${86 + i * 7} 88`} stroke="#D8D2C4" strokeWidth="4" strokeLinecap="round" />)}
+        <path d="M 68 44 Q 100 34 132 44" stroke="#B8B0A0" strokeWidth="2" fill="none" />
+      </g>
+    );
+    default: return null;
+  }
+}
+
+/* ---------- mascaras y anteojos ---------- */
+function Rostro({ tipo, det, ropa }: { tipo: string; det: string; ropa: string }) {
+  switch (tipo) {
+    case "lentes": return (
+      <g>
+        <circle cx="88" cy="68" r="9" fill="#0A0710" opacity=".18" />
+        <circle cx="112" cy="68" r="9" fill="#0A0710" opacity=".18" />
+        <circle cx="88" cy="68" r="9" fill="none" stroke="#2A2035" strokeWidth="2.2" />
+        <circle cx="112" cy="68" r="9" fill="none" stroke="#2A2035" strokeWidth="2.2" />
+        <path d="M 97 68 L 103 68 M 79 68 L 70 66 M 121 68 L 130 66" stroke="#2A2035" strokeWidth="2.2" fill="none" />
+      </g>
+    );
+    case "monoculo": return (
+      <g>
+        <circle cx="112" cy="68" r="11" fill="#7CD5FF" opacity=".14" />
+        <circle cx="112" cy="68" r="11" fill="none" stroke="#D9A441" strokeWidth="2.4" />
+        <path d="M 112 79 q 3 14 -4 22" stroke="#D9A441" strokeWidth="1.4" fill="none" />
+      </g>
+    );
+    case "antifaz": return <path d="M 71 60 Q 100 52 129 60 L 127 76 Q 100 69 73 76 Z" fill="#14101C" opacity=".92" />;
+    case "mascaraMedia": return (
+      <g>
+        <path d="M 70 76 Q 100 70 130 76 L 128 96 Q 100 104 72 96 Z" fill={det} />
+        <path d="M 70 76 Q 100 70 130 76" stroke={sombra(det, .7)} strokeWidth="2" fill="none" />
+        <path d="M 88 86 L 112 86" stroke={sombra(det, .6)} strokeWidth="1.6" />
+      </g>
+    );
+    case "respirador": return (
+      <g>
+        <path d="M 74 74 Q 100 68 126 74 L 124 94 Q 100 102 76 94 Z" fill="#3A3140" />
+        <circle cx="86" cy="86" r="6" fill="#1B1220" stroke="#8F97A6" strokeWidth="1.6" />
+        <circle cx="114" cy="86" r="6" fill="#1B1220" stroke="#8F97A6" strokeWidth="1.6" />
+        <path d="M 92 86 L 108 86" stroke="#8F97A6" strokeWidth="2" />
+        <path d="M 74 78 L 64 74 M 126 78 L 136 74" stroke="#3A3140" strokeWidth="3" strokeLinecap="round" />
+      </g>
+    );
+    case "velo": return (
+      <g>
+        <path d="M 70 72 Q 100 66 130 72 L 130 104 Q 100 112 70 104 Z" fill={ropa} opacity=".92" />
+        <path d="M 70 72 Q 100 66 130 72" stroke={det} strokeWidth="2" fill="none" />
+        <path d="M 76 88 Q 100 94 124 88" stroke={sombra(ropa, .7)} strokeWidth="1.4" fill="none" />
+      </g>
+    );
+    default: return null;
+  }
+}
+
 /* ---------- atuendos ---------- */
-function Atuendo({ tipo, w, ropa, osc, det, detOsc, grad }:
-  { tipo: string; w: number; ropa: string; osc: string; det: string; detOsc: string; grad: string }) {
-  const torso = `M ${100 - 40 * w} 114 Q 100 104 ${100 + 40 * w} 114 L ${100 + 36 * w} 196 Q 100 204 ${100 - 36 * w} 196 Z`;
+function Atuendo({ tipo, w, hombro, cintura, ropa, osc, det, detOsc, grad, metal }:
+  { tipo: string; w: number; hombro: number; cintura: number; ropa: string; osc: string; det: string; detOsc: string; grad: string; metal: string }) {
+  const HL = 100 - 40 * w * hombro, HR = 100 + 40 * w * hombro;
+  const CL = 100 - 36 * w * cintura, CR = 100 + 36 * w * cintura;
+  const torso = `M ${HL} 114 Q 100 104 ${HR} 114 L ${CR} 196 Q 100 204 ${CL} 196 Z`;
   const L = (k: number) => 100 - k * w, R = (k: number) => 100 + k * w;
 
   switch (tipo) {
-    /* ---- ASESINO: tunica cruzada, fajin con hebilla, correas y hoja oculta ---- */
-    case "asesino":
-      return (
-        <g>
-          <path d={torso} fill={grad} />
-          {/* solapa cruzada */}
-          <path d={`M ${L(40)} 114 Q 100 104 ${R(40)} 114 L ${R(26)} 142 L ${L(14)} 196 L ${L(36)} 196 Z`} fill={osc} opacity=".5" />
-          <path d={`M ${R(40)} 116 L ${R(26)} 144 L ${L(14)} 196`} stroke={det} strokeWidth="3.2" fill="none" />
-          <path d={`M ${R(36)} 116 L ${R(22)} 144 L ${L(18)} 196`} stroke={detOsc} strokeWidth="1.4" fill="none" opacity=".7" />
-          {/* fajin con vuelta */}
-          <path d={`M ${L(37)} 160 h ${74 * w} v 18 h ${-74 * w} Z`} fill={det} />
-          <path d={`M ${L(37)} 175 h ${74 * w} v 5 h ${-74 * w} Z`} fill={detOsc} />
-          <path d={`M ${R(28)} 160 l ${8 * w} 22 l ${-13 * w} -4 Z`} fill={detOsc} />
-          {/* correa al pecho con hebilla */}
-          <path d={`M ${L(33)} 124 L ${R(29)} 166`} stroke={detOsc} strokeWidth="7.5" strokeLinecap="round" />
-          <path d={`M ${L(33)} 124 L ${R(29)} 166`} stroke={det} strokeWidth="3" strokeLinecap="round" opacity=".5" />
-          <circle cx={L(2)} cy={146} r="6" fill="#FFB05C" />
-          <path d={`M ${L(2) - 3} 146 h 6 M ${L(2)} 143 v 6`} stroke={osc} strokeWidth="1.4" />
-          {/* faldones */}
-          <path d={`M ${L(30)} 184 L ${L(25)} 216 L ${L(9)} 190 Z`} fill={osc} />
-          <path d={`M ${R(30)} 184 L ${R(25)} 216 L ${R(9)} 190 Z`} fill={osc} />
-          <path d={`M ${L(30)} 184 L ${L(25)} 216`} stroke={det} strokeWidth="1.6" opacity=".6" />
-        </g>
-      );
+    case "asesino": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${HL} 114 Q 100 104 ${HR} 114 L ${R(26)} 142 L ${L(14)} 196 L ${CL} 196 Z`} fill={osc} opacity=".5" />
+        <path d={`M ${HR} 116 L ${R(26)} 144 L ${L(14)} 196`} stroke={det} strokeWidth="3.2" fill="none" />
+        <path d={`M ${L(37)} 160 h ${74 * w} v 18 h ${-74 * w} Z`} fill={det} />
+        <path d={`M ${L(37)} 175 h ${74 * w} v 5 h ${-74 * w} Z`} fill={detOsc} />
+        <path d={`M ${R(28)} 160 l ${8 * w} 22 l ${-13 * w} -4 Z`} fill={detOsc} />
+        <path d={`M ${L(33)} 124 L ${R(29)} 166`} stroke={detOsc} strokeWidth="7.5" strokeLinecap="round" />
+        <circle cx={L(2)} cy={146} r="6" fill="#FFB05C" />
+        <path d={`M ${L(30)} 184 L ${L(25)} 216 L ${L(9)} 190 Z`} fill={osc} />
+        <path d={`M ${R(30)} 184 L ${R(25)} 216 L ${R(9)} 190 Z`} fill={osc} />
+      </g>
+    );
 
-    /* ---- SOMBRA: peto acolchado, correas en X, bufanda y dagas ---- */
-    case "sombra":
-      return (
-        <g>
-          <path d={torso} fill={grad} />
-          <path d={`M ${L(32)} 120 Q 100 112 ${R(32)} 120 L ${R(28)} 170 Q 100 178 ${L(28)} 170 Z`} fill={osc} />
-          {[0, 1, 2].map((i) => (
-            <path key={i} d={`M ${L(30)} ${130 + i * 13} Q 100 ${136 + i * 13} ${R(30)} ${130 + i * 13}`} stroke={detOsc} strokeWidth="2" fill="none" opacity=".8" />
-          ))}
-          {/* correas en X */}
-          <path d={`M ${L(34)} 120 L ${R(30)} 172`} stroke={det} strokeWidth="6" strokeLinecap="round" />
-          <path d={`M ${R(34)} 120 L ${L(30)} 172`} stroke={detOsc} strokeWidth="6" strokeLinecap="round" />
-          <circle cx="100" cy="146" r="6.5" fill={det} />
-          <circle cx="100" cy="146" r="2.6" fill="#FFB05C" />
-          {/* bufanda al cuello */}
-          <path d={`M ${L(22)} 110 Q 100 122 ${R(22)} 110 L ${R(18)} 100 Q 100 110 ${L(18)} 100 Z`} fill={det} />
-          <path d={`M ${R(16)} 112 q ${10 * w} 16 ${4 * w} 34 q ${-8 * w} -10 ${-12 * w} -22 Z`} fill={detOsc} />
-          {/* cinturon con dagas */}
-          <rect x={L(37)} y="168" width={74 * w} height="10" rx="3" fill={detOsc} />
-          <path d={`M ${L(30)} 178 l 0 16 l ${4 * w} -4 l ${4 * w} 4 l 0 -16 Z`} fill="#9AA7B4" />
-          <path d={`M ${R(22)} 178 l 0 16 l ${4 * w} -4 l ${4 * w} 4 l 0 -16 Z`} fill="#9AA7B4" />
-        </g>
-      );
+    case "sombra": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(32)} 120 Q 100 112 ${R(32)} 120 L ${R(28)} 170 Q 100 178 ${L(28)} 170 Z`} fill={osc} />
+        {[0, 1, 2].map((i) => <path key={i} d={`M ${L(30)} ${130 + i * 13} Q 100 ${136 + i * 13} ${R(30)} ${130 + i * 13}`} stroke={detOsc} strokeWidth="2" fill="none" opacity=".8" />)}
+        <path d={`M ${L(34)} 120 L ${R(30)} 172`} stroke={det} strokeWidth="6" strokeLinecap="round" />
+        <path d={`M ${R(34)} 120 L ${L(30)} 172`} stroke={detOsc} strokeWidth="6" strokeLinecap="round" />
+        <circle cx="100" cy="146" r="6.5" fill={det} /><circle cx="100" cy="146" r="2.6" fill="#FFB05C" />
+        <rect x={L(37)} y="168" width={74 * w} height="10" rx="3" fill={detOsc} />
+        <path d={`M ${L(30)} 178 l 0 16 l ${4 * w} -4 l ${4 * w} 4 l 0 -16 Z`} fill="#9AA7B4" />
+        <path d={`M ${R(22)} 178 l 0 16 l ${4 * w} -4 l ${4 * w} 4 l 0 -16 Z`} fill="#9AA7B4" />
+      </g>
+    );
 
-    /* ---- EXPLORADOR: chaqueta con solapas, doble cinturon y equipo ---- */
-    case "explorador":
-      return (
-        <g>
-          <path d={torso} fill={grad} />
-          {/* solapas */}
-          <path d={`M ${L(40)} 114 Q 100 106 ${R(40)} 114 L ${R(30)} 138 Q 100 128 ${L(30)} 138 Z`} fill={det} />
-          <path d={`M ${L(14)} 116 L ${L(4)} 152 L 100 130 Z`} fill={detOsc} />
-          <path d={`M ${R(14)} 116 L ${R(4)} 152 L 100 130 Z`} fill={detOsc} />
-          <path d="M 100 130 L 100 164" stroke={osc} strokeWidth="3" />
-          {/* botones */}
-          {[0, 1, 2].map((i) => <circle key={i} cx="100" cy={138 + i * 11} r="2.6" fill={det} />)}
-          {/* doble cinturon */}
-          <rect x={L(37)} y="158" width={74 * w} height="9" rx="3" fill={detOsc} />
-          <rect x={L(37)} y="172" width={74 * w} height="7" rx="3" fill={det} />
-          <rect x={100 - 7} y="156" width="14" height="13" rx="3" fill="#FFB05C" />
-          {/* bolsas y cantimplora */}
-          <rect x={L(45)} y="166" width={14 * w} height="18" rx="4" fill={detOsc} />
-          <rect x={L(45)} y="166" width={14 * w} height="5" rx="2" fill={det} />
-          <ellipse cx={R(38)} cy="176" rx={8 * w} ry="10" fill={detOsc} />
-          <rect x={R(35)} y="164" width={6 * w} height="5" rx="2" fill={det} />
-        </g>
-      );
+    /* ---- PARCA: sudario deshilachado y costillas grabadas ---- */
+    case "parca": return (
+      <g>
+        <path d={`M ${HL} 112 Q 100 102 ${HR} 112
+                  L ${R(34)} 190 L ${R(28)} 214 L ${R(22)} 192 L ${R(14)} 220 L ${R(6)} 194
+                  L 100 224 L ${L(6)} 194 L ${L(14)} 220 L ${L(22)} 192 L ${L(28)} 214 L ${L(34)} 190 Z`} fill={grad} />
+        {[0, 1, 2, 3].map((i) => (
+          <g key={i} opacity=".55">
+            <path d={`M ${L(22)} ${132 + i * 13} Q 100 ${138 + i * 13} ${R(22)} ${132 + i * 13}`} stroke={detOsc} strokeWidth="2.2" fill="none" />
+          </g>
+        ))}
+        <path d="M 100 118 L 100 182" stroke={detOsc} strokeWidth="3" opacity=".7" />
+        <path d={`M ${L(30)} 118 Q 100 128 ${R(30)} 118`} stroke={det} strokeWidth="2.4" fill="none" opacity=".6" />
+        <circle cx="100" cy="128" r="5" fill="#2A1A10" stroke="#7A5A28" strokeWidth="1.2" />
+        <circle cx="100" cy="128" r="1.6" fill="#8B0A1E" />
+      </g>
+    );
 
-    /* ---- ERUDITO: toga, estola bordada, cuello alto y medallon ---- */
-    case "erudito":
-      return (
-        <g>
-          <path d={`M ${L(42)} 114 Q 100 102 ${R(42)} 114 L ${R(40)} 208 Q 100 218 ${L(40)} 208 Z`} fill={grad} />
-          <path d={`M ${L(20)} 108 Q 100 124 ${R(20)} 108 L ${R(16)} 96 Q 100 108 ${L(16)} 96 Z`} fill={det} />
-          {/* estolas */}
-          <path d={`M ${L(15)} 112 L ${L(19)} 204 L ${L(8)} 204 L ${L(6)} 114 Z`} fill={det} />
-          <path d={`M ${R(15)} 112 L ${R(19)} 204 L ${R(8)} 204 L ${R(6)} 114 Z`} fill={det} />
-          {[0, 1, 2, 3].map((i) => (
-            <g key={i}>
-              <circle cx={L(13)} cy={132 + i * 18} r="2.4" fill={detOsc} />
-              <circle cx={R(13)} cy={132 + i * 18} r="2.4" fill={detOsc} />
-            </g>
-          ))}
-          {/* medallon */}
-          <path d="M 100 118 L 100 132" stroke={detOsc} strokeWidth="2" />
-          <circle cx="100" cy="138" r="7" fill="#FFB05C" />
-          <circle cx="100" cy="138" r="3" fill={osc} />
-          <path d={`M ${L(40)} 188 Q 100 198 ${R(40)} 188`} stroke={detOsc} strokeWidth="4" fill="none" />
-        </g>
-      );
+    /* ---- INFERNAL: placas con grietas de brasa ---- */
+    case "diablo": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(34)} 118 Q 100 110 ${R(34)} 118 L ${R(28)} 168 Q 100 178 ${L(28)} 168 Z`} fill="#2A0E0A" />
+        <path d={`M ${L(24)} 122 L ${L(14)} 150 L ${L(20)} 152 L ${L(10)} 172`} stroke="#FF6B35" strokeWidth="2.2" fill="none" />
+        <path d={`M ${R(24)} 126 L ${R(12)} 148 L ${R(18)} 152 L ${R(8)} 170`} stroke="#FF3B1F" strokeWidth="2" fill="none" />
+        <path d={`M 100 118 L 100 172`} stroke="#FF6B35" strokeWidth="1.6" opacity=".8" />
+        <rect x={L(37)} y="166" width={74 * w} height="12" rx="3" fill="#3A1410" />
+        {[0, 1, 2, 3].map((i) => <circle key={i} cx={L(26) + i * 17 * w} cy="172" r="3.2" fill="#FF6B35" />)}
+        {[0, 1, 2, 3].map((i) => (
+          <path key={i} d={`M ${L(32) + i * 17 * w} 180 l ${7 * w} 30 l ${7 * w} -30 Z`} fill={i % 2 ? "#3A1410" : "#5A1A12"} />
+        ))}
+        <circle cx="100" cy="140" r="7" fill="#FF6B35" opacity=".35" />
+        <circle cx="100" cy="140" r="3.5" fill="#FFD36B" />
+      </g>
+    );
 
-    /* ---- ARCANO: runas, cinturon de sellos y orbe ---- */
-    case "arcano":
-      return (
-        <g>
-          <path d={`M ${L(41)} 114 Q 100 103 ${R(41)} 114 L ${R(38)} 206 Q 100 216 ${L(38)} 206 Z`} fill={grad} />
-          {/* borde rúnico */}
-          <path d={`M ${L(41)} 122 Q 100 112 ${R(41)} 122`} stroke={det} strokeWidth="3" fill="none" />
-          {[0, 1, 2, 3, 4].map((i) => (
-            <text key={i} x={L(30) - 2 + i * 15 * w} y="136" fontSize="9" fill={det} opacity=".85" fontFamily="monospace">
-              {["◇", "△", "◎", "▽", "✦"][i]}
-            </text>
-          ))}
-          <path d="M 100 140 L 100 176" stroke={osc} strokeWidth="3" />
-          {/* cinturon de sellos */}
-          <rect x={L(37)} y="168" width={74 * w} height="11" rx="4" fill={detOsc} />
-          {[0, 1, 2].map((i) => <circle key={i} cx={L(18) + i * 18 * w} cy="173.5" r="3.4" fill="#FFB05C" opacity=".9" />)}
-          {/* orbe suspendido */}
-          <circle cx={R(36)} cy="186" r={9 * w} fill={det} opacity=".35" />
-          <circle cx={R(36)} cy="186" r={5.5 * w} fill="#B794F6" />
-          <circle cx={R(36)} cy="186" r={2.4 * w} fill="#FFF" opacity=".85" />
-          <path d={`M ${R(36)} 170 L ${R(36)} 178`} stroke={detOsc} strokeWidth="1.6" />
-          <path d={`M ${L(30)} 192 L ${L(26)} 212 L ${L(12)} 196 Z`} fill={osc} />
-        </g>
-      );
+    case "explorador": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${HL} 114 Q 100 106 ${HR} 114 L ${R(30)} 138 Q 100 128 ${L(30)} 138 Z`} fill={det} />
+        <path d={`M ${L(14)} 116 L ${L(4)} 152 L 100 130 Z`} fill={detOsc} />
+        <path d={`M ${R(14)} 116 L ${R(4)} 152 L 100 130 Z`} fill={detOsc} />
+        {[0, 1, 2].map((i) => <circle key={i} cx="100" cy={138 + i * 11} r="2.6" fill={det} />)}
+        <rect x={L(37)} y="158" width={74 * w} height="9" rx="3" fill={detOsc} />
+        <rect x={L(37)} y="172" width={74 * w} height="7" rx="3" fill={det} />
+        <rect x={100 - 7} y="156" width="14" height="13" rx="3" fill="#FFB05C" />
+        <rect x={L(45)} y="166" width={14 * w} height="18" rx="4" fill={detOsc} />
+        <ellipse cx={R(38)} cy="176" rx={8 * w} ry="10" fill={detOsc} />
+      </g>
+    );
 
-    /* ---- GUARDIA: peto remachado y faldon segmentado ---- */
-    case "guardia":
-      return (
-        <g>
-          <path d={torso} fill={grad} />
-          <path d={`M ${L(34)} 118 Q 100 108 ${R(34)} 118 L ${R(28)} 162 Q 100 172 ${L(28)} 162 Z`} fill={det} />
-          <path d="M 100 112 L 100 166" stroke={detOsc} strokeWidth="2.5" />
-          <path d={`M ${L(26)} 132 Q 100 142 ${R(26)} 132`} stroke={detOsc} strokeWidth="2.5" fill="none" />
-          <path d={`M ${L(24)} 148 Q 100 158 ${R(24)} 148`} stroke={detOsc} strokeWidth="2.5" fill="none" />
-          {[0, 1, 2, 3].map((i) => (
-            <g key={i}>
-              <circle cx={L(26) + i * 6} cy="124" r="1.8" fill={detOsc} />
-              <circle cx={R(26) - i * 6} cy="124" r="1.8" fill={detOsc} />
-            </g>
-          ))}
-          <rect x={L(37)} y="160" width={74 * w} height="10" rx="3" fill={detOsc} />
-          {[0, 1, 2, 3].map((i) => (
-            <rect key={i} x={L(34) + i * 17 * w} y="170" width={15 * w} height="28" rx="4" fill={i % 2 ? detOsc : det} />
-          ))}
-        </g>
-      );
+    /* ---- NOMADA: capas de tela ligera y cuerda al hombro ---- */
+    case "nomada": return (
+      <g>
+        <path d={`M ${HL} 114 Q 100 104 ${HR} 114 L ${R(40)} 210 Q 100 220 ${L(40)} 210 Z`} fill={grad} />
+        <path d={`M ${HL} 114 Q 100 106 ${HR} 114 L ${R(24)} 150 L ${L(30)} 178 L ${L(40)} 160 Z`} fill={det} opacity=".8" />
+        <path d={`M ${L(40)} 176 Q 100 188 ${R(40)} 176`} stroke={detOsc} strokeWidth="5" fill="none" />
+        <path d={`M ${L(40)} 194 Q 100 204 ${R(40)} 194`} stroke={det} strokeWidth="3.5" fill="none" opacity=".7" />
+        <path d={`M ${L(30)} 114 Q ${L(40)} 150 ${L(28)} 186`} stroke={detOsc} strokeWidth="4" fill="none" strokeLinecap="round" />
+        <circle cx={L(29)} cy="150" r="3.5" fill="#D9A441" />
+        <path d={`M ${R(30)} 186 l ${6 * w} 22 l ${-14 * w} -6 Z`} fill={osc} />
+      </g>
+    );
 
-    /* ---- TUNICA ---- */
-    default:
-      return (
-        <g>
-          <path d={torso} fill={grad} />
-          <rect x={L(37)} y="160" width={74 * w} height="10" rx="4" fill={det} />
-          <rect x={100 - 6} y="158" width="12" height="14" rx="3" fill="#FFB05C" />
-          <path d="M 100 116 L 100 160" stroke={osc} strokeWidth="3" strokeLinecap="round" />
-          <path d={`M ${L(30)} 192 L ${L(26)} 214 L ${L(10)} 194 Z`} fill={osc} />
-          <path d={`M ${R(30)} 192 L ${R(26)} 214 L ${R(10)} 194 Z`} fill={osc} />
-        </g>
-      );
+    case "erudito": return (
+      <g>
+        <path d={`M ${100 - 42 * w} 114 Q 100 102 ${100 + 42 * w} 114 L ${100 + 40 * w} 208 Q 100 218 ${100 - 40 * w} 208 Z`} fill={grad} />
+        <path d={`M ${L(20)} 108 Q 100 124 ${R(20)} 108 L ${R(16)} 96 Q 100 108 ${L(16)} 96 Z`} fill={det} />
+        <path d={`M ${L(15)} 112 L ${L(19)} 204 L ${L(8)} 204 L ${L(6)} 114 Z`} fill={det} />
+        <path d={`M ${R(15)} 112 L ${R(19)} 204 L ${R(8)} 204 L ${R(6)} 114 Z`} fill={det} />
+        {[0, 1, 2, 3].map((i) => (
+          <g key={i}><circle cx={L(13)} cy={132 + i * 18} r="2.4" fill={detOsc} /><circle cx={R(13)} cy={132 + i * 18} r="2.4" fill={detOsc} /></g>
+        ))}
+        <path d="M 100 118 L 100 132" stroke={detOsc} strokeWidth="2" />
+        <circle cx="100" cy="138" r="7" fill="#FFB05C" /><circle cx="100" cy="138" r="3" fill={osc} />
+      </g>
+    );
+
+    case "arcano": return (
+      <g>
+        <path d={`M ${100 - 41 * w} 114 Q 100 103 ${100 + 41 * w} 114 L ${100 + 38 * w} 206 Q 100 216 ${100 - 38 * w} 206 Z`} fill={grad} />
+        <path d={`M ${100 - 41 * w} 122 Q 100 112 ${100 + 41 * w} 122`} stroke={det} strokeWidth="3" fill="none" />
+        {[0, 1, 2, 3, 4].map((i) => (
+          <text key={i} x={L(30) - 2 + i * 15 * w} y="136" fontSize="9" fill={det} opacity=".85" fontFamily="monospace">{["◇", "△", "◎", "▽", "✦"][i]}</text>
+        ))}
+        <path d="M 100 140 L 100 176" stroke={osc} strokeWidth="3" />
+        <rect x={L(37)} y="168" width={74 * w} height="11" rx="4" fill={detOsc} />
+        {[0, 1, 2].map((i) => <circle key={i} cx={L(18) + i * 18 * w} cy="173.5" r="3.4" fill="#FFB05C" opacity=".9" />)}
+        <circle cx={R(36)} cy="186" r={9 * w} fill={det} opacity=".35" />
+        <circle cx={R(36)} cy="186" r={5.5 * w} fill="#B794F6" />
+        <circle cx={R(36)} cy="186" r={2.4 * w} fill="#FFF" opacity=".85" />
+      </g>
+    );
+
+    case "guardia": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(34)} 118 Q 100 108 ${R(34)} 118 L ${R(28)} 162 Q 100 172 ${L(28)} 162 Z`} fill={det} />
+        <path d="M 100 112 L 100 166" stroke={detOsc} strokeWidth="2.5" />
+        <path d={`M ${L(26)} 132 Q 100 142 ${R(26)} 132`} stroke={detOsc} strokeWidth="2.5" fill="none" />
+        {[0, 1, 2, 3].map((i) => (
+          <g key={i}><circle cx={L(26) + i * 6} cy="124" r="1.8" fill={detOsc} /><circle cx={R(26) - i * 6} cy="124" r="1.8" fill={detOsc} /></g>
+        ))}
+        <rect x={L(37)} y="160" width={74 * w} height="10" rx="3" fill={detOsc} />
+        {[0, 1, 2, 3].map((i) => <rect key={i} x={L(34) + i * 17 * w} y="170" width={15 * w} height="28" rx="4" fill={i % 2 ? detOsc : det} />)}
+      </g>
+    );
+
+    /* ---- CORAZA: armadura completa de placas ---- */
+    case "placas": return (
+      <g>
+        <path d={torso} fill={metal} />
+        <path d={`M ${L(20)} 106 Q 100 118 ${R(20)} 106 L ${R(16)} 98 Q 100 108 ${L(16)} 98 Z`} fill={metal} />
+        <path d={`M ${L(34)} 120 Q 100 112 ${R(34)} 120 L ${R(30)} 150 Q 100 160 ${L(30)} 150 Z`} fill="#A7AEBC" />
+        <path d={`M ${L(30)} 152 Q 100 162 ${R(30)} 152 L ${R(27)} 172 Q 100 182 ${L(27)} 172 Z`} fill="#98A0AF" />
+        <path d="M 100 112 L 100 176" stroke="#6A7382" strokeWidth="2.4" />
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <g key={i}><circle cx={L(31)} cy={124 + i * 9} r="1.6" fill="#6A7382" /><circle cx={R(31)} cy={124 + i * 9} r="1.6" fill="#6A7382" /></g>
+        ))}
+        <path d={`M ${L(34)} 118 Q 100 128 ${R(34)} 118`} stroke={det} strokeWidth="3" fill="none" />
+        <rect x={L(37)} y="174" width={74 * w} height="9" rx="3" fill={det} />
+        {[0, 1, 2, 3, 4].map((i) => <path key={i} d={`M ${L(36) + i * 14.5 * w} 184 h ${13 * w} l ${-2 * w} 22 h ${-9 * w} Z`} fill={i % 2 ? "#98A0AF" : "#A7AEBC"} />)}
+      </g>
+    );
+
+    /* ---- HERALDO: jubon con galones y banda ---- */
+    case "real": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(20)} 108 Q 100 122 ${R(20)} 108 L ${R(15)} 98 Q 100 110 ${L(15)} 98 Z`} fill={det} />
+        {[0, 1, 2, 3, 4].map((i) => (
+          <g key={i}>
+            <path d={`M ${L(18)} ${128 + i * 13} L ${R(18)} ${128 + i * 13}`} stroke={det} strokeWidth="2.6" />
+            <circle cx={L(18)} cy={128 + i * 13} r="2" fill={det} />
+            <circle cx={R(18)} cy={128 + i * 13} r="2" fill={det} />
+          </g>
+        ))}
+        <path d={`M ${HL} 118 L ${R(28)} 190 L ${R(16)} 196 L ${L(34)} 126 Z`} fill={det} opacity=".85" />
+        <path d={`M ${HL} 118 L ${R(28)} 190`} stroke={detOsc} strokeWidth="1.6" />
+        <circle cx={L(6)} cy="158" r="8" fill="#D9A441" />
+        <circle cx={L(6)} cy="158" r="3.5" fill={osc} />
+        <rect x={L(37)} y="172" width={74 * w} height="10" rx="3" fill={detOsc} />
+        <path d={`M ${L(28)} 190 L ${L(22)} 214 L ${L(6)} 194 Z`} fill={osc} />
+        <path d={`M ${R(28)} 190 L ${R(22)} 214 L ${R(6)} 194 Z`} fill={osc} />
+      </g>
+    );
+
+    default: return (
+      <g>
+        <path d={torso} fill={grad} />
+        <rect x={L(37)} y="160" width={74 * w} height="10" rx="4" fill={det} />
+        <rect x={100 - 6} y="158" width="12" height="14" rx="3" fill="#FFB05C" />
+        <path d="M 100 116 L 100 160" stroke={osc} strokeWidth="3" strokeLinecap="round" />
+        <path d={`M ${L(30)} 192 L ${L(26)} 214 L ${L(10)} 194 Z`} fill={osc} />
+        <path d={`M ${R(30)} 192 L ${R(26)} 214 L ${R(10)} 194 Z`} fill={osc} />
+      </g>
+    );
   }
 }
 
@@ -284,20 +469,23 @@ function HojaOculta({ x, y, w, det }: { x: number; y: number; w: number; det: st
   );
 }
 
-/* ---------- brazos: manga, antebrazo y mano pegados ---------- */
-function Brazos({ w, ropa, osc, piel, det, brazaletes }:
-  { w: number; ropa: string; osc: string; piel: string; det: string; brazaletes: boolean }) {
-  const xi = 100 - 40 * w, xd = 100 + 40 * w;
+/* ---------- brazos ---------- */
+function Brazos({ w, hombro, ropa, osc, piel, det, brazaletes, metal, atuendo }:
+  { w: number; hombro: number; ropa: string; osc: string; piel: string; det: string; brazaletes: boolean; metal: string; atuendo: string }) {
+  const xi = 100 - 40 * w * hombro, xd = 100 + 40 * w * hombro;
+  const duro = atuendo === "placas";
+  const col = duro ? metal : ropa;
+  const colD = duro ? metal : osc;
   return (
     <g>
       <path d={`M ${xi} 134 Q ${xi - 13 * w} 162 ${xi - 6 * w} 190`} stroke={sombra(ropa, .5)} strokeWidth={19 * w} strokeLinecap="round" fill="none" />
       <path d={`M ${xd} 134 Q ${xd + 13 * w} 162 ${xd + 6 * w} 190`} stroke={sombra(ropa, .5)} strokeWidth={19 * w} strokeLinecap="round" fill="none" />
-      <path d={`M ${xi} 134 Q ${xi - 13 * w} 162 ${xi - 6 * w} 190`} stroke={ropa} strokeWidth={15 * w} strokeLinecap="round" fill="none" />
-      <path d={`M ${xd} 134 Q ${xd + 13 * w} 162 ${xd + 6 * w} 190`} stroke={osc} strokeWidth={15 * w} strokeLinecap="round" fill="none" />
+      <path d={`M ${xi} 134 Q ${xi - 13 * w} 162 ${xi - 6 * w} 190`} stroke={col} strokeWidth={15 * w} strokeLinecap="round" fill="none" />
+      <path d={`M ${xd} 134 Q ${xd + 13 * w} 162 ${xd + 6 * w} 190`} stroke={colD} strokeWidth={15 * w} strokeLinecap="round" fill="none" />
       {brazaletes && (
         <>
-          <path d={`M ${xi - 10 * w} 176 q ${8 * w} 4 ${10 * w} 0`} stroke={det} strokeWidth="9" strokeLinecap="round" fill="none" />
-          <path d={`M ${xd + 10 * w} 176 q ${-8 * w} 4 ${-10 * w} 0`} stroke={det} strokeWidth="9" strokeLinecap="round" fill="none" />
+          <path d={`M ${xi - 10 * w} 176 q ${8 * w} 4 ${10 * w} 0`} stroke={duro ? metal : det} strokeWidth="9" strokeLinecap="round" fill="none" />
+          <path d={`M ${xd + 10 * w} 176 q ${-8 * w} 4 ${-10 * w} 0`} stroke={duro ? metal : det} strokeWidth="9" strokeLinecap="round" fill="none" />
         </>
       )}
       <circle cx={xi - 6 * w} cy="194" r={8.5 * w} fill={piel} stroke={sombra(piel, .7)} strokeWidth="1" />
@@ -306,31 +494,10 @@ function Brazos({ w, ropa, osc, piel, det, brazaletes }:
   );
 }
 
-/* ---------- capucha puesta: enmarca el rostro sin taparlo ---------- */
-function Capucha({ tipo, ropa, osc, det, w }: { tipo: string; ropa: string; osc: string; det: string; w: number }) {
-  const pico = tipo === "asesino" || tipo === "erudito";
-  return (
-    <g>
-      {/* volumen exterior de la capucha, abierto en el frente */}
-      <path d={pico
-        ? "M 100 12 Q 62 24 62 78 Q 64 92 70 96 Q 66 50 82 40 Q 91 33 100 33 Q 109 33 118 40 Q 134 50 130 96 Q 136 92 138 78 Q 138 24 100 12 Z"
-        : "M 100 18 Q 64 30 64 78 Q 66 92 72 96 Q 68 52 84 43 Q 92 38 100 38 Q 108 38 116 43 Q 132 52 128 96 Q 134 92 136 78 Q 136 30 100 18 Z"}
-        fill={ropa} />
-      {/* pano que cae sobre la espalda, detras de los hombros */}
-      <path d={`M 66 84 Q 58 108 ${100 - 40 * w} 128 L ${100 - 26 * w} 124 Q 70 106 74 84 Z`} fill={osc} />
-      <path d={`M 134 84 Q 142 108 ${100 + 40 * w} 128 L ${100 + 26 * w} 124 Q 130 106 126 84 Z`} fill={osc} />
-      {/* interior en sombra sobre la frente */}
-      <path d="M 72 70 Q 72 42 100 38 Q 128 42 128 70 Q 120 48 100 46 Q 80 48 72 70 Z" fill="#0A0710" opacity=".5" />
-      {/* filo del borde */}
-      <path d={pico ? "M 70 96 Q 66 50 82 40 Q 91 33 100 33 Q 109 33 118 40 Q 134 50 130 96" : "M 72 96 Q 68 52 84 43 Q 92 38 100 38 Q 108 38 116 43 Q 132 52 128 96"}
-        stroke={det} strokeWidth="2.4" fill="none" opacity=".85" />
-      {/* pico caido hacia adelante */}
-      {pico && <path d="M 100 12 Q 116 20 112 40 Q 106 27 96 25 Z" fill={det} />}
-    </g>
-  );
-}
+/* ---------- cascos, capuchas y tocados ---------- */
 
-function Ojos({ color }: { color: string }) {
+function Ojos({ color, sexo }: { color: string; sexo?: string }) {
+  const pestanas = sexo === "f";
   return (
     <g className="ojos">
       <ellipse cx="88" cy="68" rx="6" ry="7.2" fill="#fff" />
@@ -339,8 +506,12 @@ function Ojos({ color }: { color: string }) {
       <ellipse cx="113" cy="69" rx="3.6" ry="4.6" fill={color} />
       <circle cx="90.2" cy="66.9" r="1.3" fill="#fff" />
       <circle cx="114.2" cy="66.9" r="1.3" fill="#fff" />
-      <path d="M 81 58 Q 88 54.5 95 58" stroke="#1B1220" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-      <path d="M 105 58 Q 112 54.5 119 58" stroke="#1B1220" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+      <path d="M 81 58 Q 88 54.5 95 58" stroke="#1B1220" strokeWidth={sexo === "m" ? 2.8 : 2.2} strokeLinecap="round" fill="none" />
+      <path d="M 105 58 Q 112 54.5 119 58" stroke="#1B1220" strokeWidth={sexo === "m" ? 2.8 : 2.2} strokeLinecap="round" fill="none" />
+      {pestanas && (<>
+        <path d="M 81.5 65 L 78 62.5 M 94.5 65 L 98 62.5" stroke="#1B1220" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M 105.5 65 L 102 62.5 M 118.5 65 L 122 62.5" stroke="#1B1220" strokeWidth="1.6" strokeLinecap="round" />
+      </>)}
     </g>
   );
 }
@@ -353,6 +524,7 @@ function Vello({ tipo, color }: { tipo: string; color: string }) {
       <path d="M 91 80 q 9 -3 18 0" stroke={color} strokeWidth="3.4" strokeLinecap="round" fill="none" />
     </>
   );
+  if (tipo === "perilla") return <path d="M 94 92 q 6 -2 12 0 q -2 12 -6 13 q -4 -1 -6 -13 Z" fill={color} />;
   if (tipo === "bigote") return <path d="M 91 80 q 9 -4 18 0 q -4.5 5 -9 5 q -4.5 0 -9 -5 Z" fill={color} />;
   return null;
 }

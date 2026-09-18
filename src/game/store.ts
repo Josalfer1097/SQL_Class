@@ -4,59 +4,122 @@ import { LECCIONES } from "./lecciones";
 const LECCIONES_XP: Record<string, number> = Object.fromEntries(LECCIONES.map((l) => [l.reino, l.xp]));
 
 /* ---------- personaje ---------- */
-export type Silueta = "a" | "b";                       // a: ancha, b: estilizada
-export type Atuendo = "asesino" | "sombra" | "explorador" | "erudito" | "guardia" | "arcano" | "tunica";
-export type Capucha = "abajo" | "arriba";
+export type Sexo = "f" | "m" | "x";                     // femenino, masculino, andromorfo
+export type Complexion = "esbelta" | "media" | "ancha";
+export type Atuendo =
+  | "asesino" | "sombra" | "explorador" | "erudito" | "arcano" | "guardia" | "tunica"
+  | "parca" | "diablo" | "placas" | "real" | "nomada";
+export type Cabeza =
+  | "ninguna" | "capucha" | "capuchaPico" | "yelmo" | "celada" | "corona" | "diadema"
+  | "sombrero" | "turbante" | "cuernos" | "calavera";
+export type Rostro = "ninguno" | "lentes" | "monoculo" | "antifaz" | "mascaraMedia" | "respirador" | "velo";
 
 export interface Personaje {
   nombre: string;
-  silueta: Silueta;
+  sexo: Sexo;
+  complexion: Complexion;
+  altura: number;            // 0.92 a 1.08
   piel: string;
   cabello: string;
   colorCabello: string;
   ojos: string;
-  /* atuendo */
+  vello: "ninguno" | "barba" | "candado" | "bigote" | "perilla";
   atuendo: Atuendo;
-  ropa: string;        // color principal de la prenda
-  detalle: string;     // fajin, correas, forro
-  capa: string;        // color de la capa (o "ninguna")
-  capucha: Capucha;
+  cabeza: Cabeza;
+  rostro: Rostro;
+  ropa: string;
+  detalle: string;
+  capa: string;
   hombrera: boolean;
   brazaletes: boolean;
-  /* rostro */
-  accesorio: "ninguno" | "lentes" | "diadema" | "cicatriz" | "antifaz";
-  vello: "ninguno" | "barba" | "candado" | "bigote";
 }
 
-export const PIELES = ["#F6D7C3", "#E8B896", "#C8895E", "#9C6240", "#6B3F2A", "#4A2B1C"];
-export const CABELLOS = ["corto", "largo", "chongo", "rapado", "trenzas", "mohawk", "ondulado"] as const;
-export const COLORES_CABELLO = ["#1B1220", "#4A2C1A", "#8B5A2B", "#D9A441", "#E8E3D6", "#8B5CF6", "#2DD4A7", "#FF3B5C"];
-export const COLORES_OJOS = ["#3B2A1E", "#2F6F9E", "#3F8F5A", "#8B5CF6", "#FF3B5C", "#FFB05C", "#9AA7B4"];
-export const COLORES_ROPA = ["#E8E3D6", "#8B5CF6", "#2457C5", "#148F62", "#B3520B", "#D9483B", "#1B1220", "#E0338A", "#5A6472"];
-export const COLORES_CAPA = ["ninguna", "#7A1F2B", "#1B3A5C", "#2A4A2E", "#4A2C5E", "#1B1220", "#8B6B2B"];
+export const PIELES = ["#F6D7C3", "#E8B896", "#D1A07A", "#C8895E", "#9C6240", "#6B3F2A", "#4A2B1C", "#8FA8B8"];
+export const CABELLOS = ["corto", "largo", "chongo", "rapado", "trenzas", "mohawk", "ondulado", "coleta", "afro"] as const;
+export const COLORES_CABELLO = ["#1B1220", "#3A2418", "#6B4423", "#A9763C", "#D9A441", "#E8E3D6", "#9AA7B4", "#8B5CF6", "#2DD4A7", "#FF3B5C", "#E0338A"];
+export const COLORES_OJOS = ["#3B2A1E", "#5C4033", "#2F6F9E", "#3F8F5A", "#8B5CF6", "#FF3B5C", "#FFB05C", "#9AA7B4", "#C9A6F5"];
+export const COLORES_ROPA = ["#E8E3D6", "#C9C3B6", "#8B5CF6", "#5B3FA8", "#2457C5", "#1B3A5C", "#148F62", "#2A4A2E", "#B3520B", "#7A1F2B", "#D9483B", "#1B1220", "#3A3140", "#E0338A", "#5A6472", "#D9A441"];
+export const COLORES_CAPA = ["ninguna", "#7A1F2B", "#1B3A5C", "#2A4A2E", "#4A2C5E", "#1B1220", "#8B6B2B", "#5A1030", "#3A3140"];
+
+export const SEXOS: { id: Sexo; nombre: string }[] = [
+  { id: "f", nombre: "Femenino" }, { id: "m", nombre: "Masculino" }, { id: "x", nombre: "Andromorfo" }
+];
 
 export const ATUENDOS: { id: Atuendo; nombre: string; nota: string }[] = [
-  { id: "asesino", nombre: "Asesino", nota: "Tunica cruzada, fajin con hebilla, correas al pecho y hoja oculta en el antebrazo." },
-  { id: "sombra", nombre: "Sombra", nota: "Version nocturna: peto acolchado, doble correa en X, bufanda y dagas al cinto." },
-  { id: "explorador", nombre: "Explorador", nota: "Chaqueta con solapas, doble cinturon, cantimplora y bolsas de campo." },
-  { id: "erudito", nombre: "Erudito", nota: "Toga larga con estola bordada, cuello alto y medallon del Archivo." },
-  { id: "arcano", nombre: "Arcano", nota: "Tunica con runas, cinturon de sellos y orbe suspendido al costado." },
-  { id: "guardia", nombre: "Guardia", nota: "Peto con remaches, hombreras de placa y faldon segmentado." },
-  { id: "tunica", nombre: "Tunica", nota: "La del aprendiz. Simple, y a veces eso basta." }
+  { id: "asesino",    nombre: "Asesino",    nota: "Tunica cruzada, fajin con hebilla y hoja oculta en el antebrazo." },
+  { id: "sombra",     nombre: "Sombra",     nota: "Peto acolchado, correas en X, bufanda y dagas al cinto." },
+  { id: "parca",      nombre: "Parca",      nota: "Sudario deshilachado y costillas grabadas. El uniforme de Umbra." },
+  { id: "diablo",     nombre: "Infernal",   nota: "Placas al rojo vivo, grietas de brasa y cinturon de fuego." },
+  { id: "explorador", nombre: "Explorador", nota: "Chaqueta con solapas, doble cinturon, cantimplora y bolsas." },
+  { id: "nomada",     nombre: "Nomada",     nota: "Capas de tela ligera, fajin cruzado y cuerda al hombro." },
+  { id: "erudito",    nombre: "Erudito",    nota: "Toga larga con estola bordada y medallon del Archivo." },
+  { id: "arcano",     nombre: "Arcano",     nota: "Tunica con runas, cinturon de sellos y orbe suspendido." },
+  { id: "guardia",    nombre: "Guardia",    nota: "Peto remachado y faldon segmentado." },
+  { id: "placas",     nombre: "Coraza",     nota: "Armadura pesada de placas con gola y escarcelas." },
+  { id: "real",       nombre: "Heraldo",    nota: "Jubon con galones dorados, banda y broche real." },
+  { id: "tunica",     nombre: "Tunica",     nota: "La del aprendiz. Simple, y a veces eso basta." }
+];
+
+export const CABEZAS: { id: Cabeza; nombre: string }[] = [
+  { id: "ninguna", nombre: "Nada" }, { id: "capucha", nombre: "Capucha" }, { id: "capuchaPico", nombre: "Capucha en pico" },
+  { id: "yelmo", nombre: "Yelmo" }, { id: "celada", nombre: "Celada" }, { id: "corona", nombre: "Corona" },
+  { id: "diadema", nombre: "Diadema" }, { id: "sombrero", nombre: "Sombrero" }, { id: "turbante", nombre: "Turbante" },
+  { id: "cuernos", nombre: "Cuernos" }, { id: "calavera", nombre: "Calavera" }
+];
+
+export const ROSTROS: { id: Rostro; nombre: string }[] = [
+  { id: "ninguno", nombre: "Nada" }, { id: "lentes", nombre: "Anteojos" }, { id: "monoculo", nombre: "Monoculo" },
+  { id: "antifaz", nombre: "Antifaz" }, { id: "mascaraMedia", nombre: "Media mascara" },
+  { id: "respirador", nombre: "Respirador" }, { id: "velo", nombre: "Velo" }
+];
+
+/* conjuntos armados, al estilo de los trajes de Tears of the Kingdom */
+export interface Conjunto { id: string; nombre: string; nota: string; p: Partial<Personaje> }
+export const CONJUNTOS: Conjunto[] = [
+  { id: "credo", nombre: "Credo del Umbral", nota: "Sigilo puro: blanco hueso, capucha en pico y hoja oculta.",
+    p: { atuendo: "asesino", cabeza: "capuchaPico", rostro: "ninguno", ropa: "#E8E3D6", detalle: "#7A1F2B", capa: "#7A1F2B", hombrera: true, brazaletes: true } },
+  { id: "nocturno", nombre: "Manto Nocturno", nota: "Para moverse sin que las tablas se enteren.",
+    p: { atuendo: "sombra", cabeza: "capucha", rostro: "mascaraMedia", ropa: "#1B1220", detalle: "#E0338A", capa: "#1B1220", hombrera: false, brazaletes: true } },
+  { id: "segador", nombre: "Segador de Datos", nota: "El uniforme de Umbra. Nadie te va a pedir explicaciones.",
+    p: { atuendo: "parca", cabeza: "capuchaPico", rostro: "velo", ropa: "#120B1C", detalle: "#3A3140", capa: "#1B1220", hombrera: false, brazaletes: false } },
+  { id: "brasa", nombre: "Forja Infernal", nota: "Placas al rojo. Discreto no es.",
+    p: { atuendo: "diablo", cabeza: "cuernos", rostro: "ninguno", ropa: "#3A1410", detalle: "#D9483B", capa: "#5A1030", hombrera: true, brazaletes: true } },
+  { id: "archivista", nombre: "Togado del Archivo", nota: "Para quien prefiere que lo tomen en serio.",
+    p: { atuendo: "erudito", cabeza: "ninguna", rostro: "lentes", ropa: "#2457C5", detalle: "#D9A441", capa: "ninguna", hombrera: false, brazaletes: false } },
+  { id: "runas", nombre: "Circulo Arcano", nota: "Runas, sellos y un orbe que nadie sabe para que sirve.",
+    p: { atuendo: "arcano", cabeza: "capucha", rostro: "ninguno", ropa: "#4A2C5E", detalle: "#D9A441", capa: "#4A2C5E", hombrera: false, brazaletes: true } },
+  { id: "muralla", nombre: "Muralla de Hierro", nota: "Coraza completa. Lento, pero nada te toca.",
+    p: { atuendo: "placas", cabeza: "celada", rostro: "ninguno", ropa: "#5A6472", detalle: "#D9A441", capa: "#1B3A5C", hombrera: true, brazaletes: true } },
+  { id: "camino", nombre: "Polvo del Camino", nota: "Cantimplora, bolsas y tierra en las botas.",
+    p: { atuendo: "explorador", cabeza: "sombrero", rostro: "ninguno", ropa: "#B3520B", detalle: "#3A2418", capa: "ninguna", hombrera: false, brazaletes: true } },
+  { id: "duna", nombre: "Hijo de la Duna", nota: "Tela ligera y velo contra la arena.",
+    p: { atuendo: "nomada", cabeza: "turbante", rostro: "velo", ropa: "#C9C3B6", detalle: "#8B6B2B", capa: "#8B6B2B", hombrera: false, brazaletes: true } },
+  { id: "corte", nombre: "Heraldo de la Corte", nota: "Galones dorados y corona. Por si hay que dar ordenes.",
+    p: { atuendo: "real", cabeza: "corona", rostro: "ninguno", ropa: "#5B3FA8", detalle: "#D9A441", capa: "#5A1030", hombrera: true, brazaletes: false } }
 ];
 
 export const personajeDefault = (): Personaje => ({
-  nombre: "", silueta: "b", piel: PIELES[1], cabello: "corto", colorCabello: COLORES_CABELLO[0],
-  ojos: COLORES_OJOS[0], atuendo: "asesino", ropa: COLORES_ROPA[0], detalle: COLORES_ROPA[4],
-  capa: COLORES_CAPA[1], capucha: "arriba", hombrera: true, brazaletes: true,
-  accesorio: "ninguno", vello: "ninguno"
+  nombre: "", sexo: "x", complexion: "media", altura: 1,
+  piel: PIELES[1], cabello: "corto", colorCabello: COLORES_CABELLO[0], ojos: COLORES_OJOS[0], vello: "ninguno",
+  atuendo: "asesino", cabeza: "capuchaPico", rostro: "ninguno",
+  ropa: COLORES_ROPA[0], detalle: COLORES_ROPA[9], capa: COLORES_CAPA[1],
+  hombrera: true, brazaletes: true
 });
 
-/* rellena los campos que falten en personajes guardados con versiones anteriores */
-export function normalizar(p: Partial<Personaje> | null): Personaje | null {
+/* rellena lo que falte en personajes guardados con versiones anteriores */
+export function normalizar(p: (Partial<Personaje> & { silueta?: string; accesorio?: string; capucha?: string }) | null): Personaje | null {
   if (!p) return null;
   const d = personajeDefault();
-  return { ...d, ...p, nombre: p.nombre ?? "" } as Personaje;
+  const o = { ...d, ...p } as Personaje;
+  if (p.silueta) o.complexion = p.silueta === "a" ? "ancha" : "esbelta";
+  if (p.capucha === "arriba" && !p.cabeza) o.cabeza = "capuchaPico";
+  if (p.capucha === "abajo" && !p.cabeza) o.cabeza = "ninguna";
+  if (p.accesorio && !p.rostro) {
+    o.rostro = p.accesorio === "lentes" ? "lentes" : p.accesorio === "antifaz" ? "antifaz" : "ninguno";
+    if (p.accesorio === "diadema") o.cabeza = "diadema";
+  }
+  o.nombre = p.nombre ?? "";
+  return o;
 }
 
 /* ---------- progreso ---------- */
