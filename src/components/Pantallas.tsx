@@ -4,6 +4,8 @@ import { acciones, useJuego, personajeDefault, PIELES, CABELLOS, COLORES_CABELLO
 import { REINOS, RANGOS, rangoDe, siguienteRango, porN, esJefe, UMBRA, frase } from "../game/mundo";
 import { leccionDe } from "../game/lecciones";
 import { Respaldo } from "./Sistema";
+import { Insignia, Vitrina } from "./Insignias";
+import { PanelInstructor } from "./Instructor";
 
 /* ---------- burbuja de dialogo ---------- */
 export function Burbuja({ texto, quien = UMBRA.nombre, lado = "izq" }: { texto: string; quien?: string; lado?: "izq" | "der" }) {
@@ -212,6 +214,8 @@ function Swatch({ c, on, onClick }: { c: string; on: boolean; onClick: () => voi
 export function Mapa() {
   const j = useJuego();
   const [respaldo, setRespaldo] = useState(false);
+  const [vitrina, setVitrina] = useState(false);
+  const [panel, setPanel] = useState(false);
   const p = j.progreso;
   const rango = rangoDe(p.xp), sig = siguienteRango(p.xp);
   const pct = sig ? Math.round(((p.xp - rango.min) / (sig.min - rango.min)) * 100) : 100;
@@ -237,7 +241,11 @@ export function Mapa() {
           <span><b>{p.resueltos.length}</b> / {totalNiveles()} desafios</span>
           <span><b>{p.reinosConquistados.length}</b> / {REINOS.length} reinos</span>
         </div>
+        <button className="btn gh peq insignias-btn" onClick={() => setVitrina(true)} title="Tus insignias">
+          <span className="ins-count">{p.reinosConquistados.length}</span> Insignias
+        </button>
         <button className="btn gh peq" onClick={() => setRespaldo(true)} title="Descargar o restaurar tu avance">Respaldo</button>
+        <button className="btn gh peq" onClick={() => setPanel(true)} title="Ver el avance de un grupo">Instructor</button>
         <button className="btn gh peq" onClick={() => { if (confirm("Se borra todo el progreso y el personaje. Seguro?")) acciones.reiniciarTodo(); }}>Reiniciar</button>
       </header>
 
@@ -251,7 +259,7 @@ export function Mapa() {
             return (
               <button key={r.id} className={"reino " + (abierto === r.id ? "cur " : "") + (conq ? "conq " : "") + (ok ? "" : "lock")}
                 style={{ ["--rc" as string]: r.color }} onClick={() => setAbierto(r.id)}>
-                <span className="reino-ico">{ok ? r.icono : "🔒"}</span>
+                <span className="reino-ico">{conq ? <Insignia reino={r.id} ganada size={30} /> : ok ? r.icono : "🔒"}</span>
                 <span className="reino-txt">
                   <span className="reino-n">{i + 1}. {r.nombre}</span>
                   <span className="reino-p">{conq ? "conquistado" : ok ? (conLeccion ? `${hechos} / ${r.niveles.length}` : "leccion pendiente") : "sellado"}</span>
@@ -313,6 +321,8 @@ export function Mapa() {
         </section>
       </div>
       {respaldo && <Respaldo onCerrar={() => setRespaldo(false)} />}
+      {vitrina && <Vitrina ganadas={p.reinosConquistados} onCerrar={() => setVitrina(false)} />}
+      {panel && <PanelInstructor onCerrar={() => setPanel(false)} />}
     </div>
   );
 }

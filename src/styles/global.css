@@ -418,3 +418,48 @@ table.res td.null{color:var(--faint);font-style:italic}table.res td.num{text-ali
 .aviso-guardado.on{opacity:1;transform:none}
 .aviso-guardado::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);margin-right:7px;vertical-align:1px}
 @media (prefers-reduced-motion:reduce){.carga-runa{animation:none}}
+
+/* ================= insignias ================= */
+.insignia{transition:transform .2s var(--ease),filter .2s}
+.insignia.ganada{filter:drop-shadow(0 0 12px color-mix(in srgb,var(--rc,#8B5CF6) 50%,transparent))}
+.insignia.bloqueada{opacity:.5;filter:grayscale(.7)}
+.insignia .brillo circle{animation:insBrillo 2.8s ease-in-out infinite}
+@keyframes insBrillo{0%,100%{opacity:.25;r:2}50%{opacity:.95;r:3.4}}
+.insignias-btn{display:inline-flex;align-items:center;gap:7px}
+.ins-count{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:999px;background:rgba(255,176,92,.16);color:var(--warn)}
+.vitrina{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
+.vit-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border-radius:14px;
+  border:1px solid var(--edge);background:var(--panel);animation:vitIn .4s var(--ease) both;transition:transform .18s var(--ease)}
+.vit-item:hover{transform:translateY(-3px)}
+.vit-item.on{border-color:var(--rc);background:color-mix(in srgb,var(--rc) 10%,var(--panel))}
+@keyframes vitIn{from{opacity:0;transform:scale(.85) translateY(10px)}to{opacity:1;transform:none}}
+.vit-n{font-size:12.5px;font-weight:600;text-align:center;line-height:1.25}
+.vit-d{font-family:var(--mono);font-size:10px;color:var(--faint)}
+.vit-item.on .vit-d{color:var(--ok)}
+
+/* ================= panel de instructor ================= */
+.pi-vacio{text-align:center;padding:26px 10px}
+.pi-vacio p{color:var(--dim);font-size:14.5px;max-width:56ch;margin:0 auto 18px;line-height:1.6}
+.pi-vacio code{font-family:var(--mono);font-size:13px;background:var(--panel2);padding:1px 6px;border-radius:5px;color:var(--lav)}
+.pi-tabs{display:flex;align-items:center;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--edge);padding-bottom:0}
+.pi-tabla{width:100%;border-collapse:collapse;font-size:13.5px}
+.pi-tabla th{text-align:left;padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--edge);white-space:nowrap}
+.pi-tabla td{padding:9px 10px;border-bottom:1px solid var(--edge2);color:var(--dim);vertical-align:middle}
+.pi-tabla tr:hover td{background:rgba(139,92,246,.06)}
+.pi-tabla tr.duro td{background:rgba(255,59,92,.07)}
+.pi-tabla .num{font-family:var(--mono);text-align:right;color:var(--ink)}
+.pi-tabla .num.medio{color:var(--warn)}
+.pi-tabla .num.alto{color:var(--bad)}
+.pi-n{color:var(--ink);font-weight:500}
+.pi-rango{font-family:var(--mono);font-size:11.5px;color:var(--lav)}
+.pi-min{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.pi-barra{height:5px;background:var(--edge2);border-radius:3px;overflow:hidden;min-width:90px;margin-bottom:3px}
+.pi-barra.ancha{min-width:160px;flex:1}
+.pi-barra i{display:block;height:100%;background:var(--iris);background-size:200%;transition:width .7s var(--ease)}
+.pi-temas{display:flex;flex-direction:column;gap:8px}
+.pi-tema{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:11px;border:1px solid var(--edge);background:var(--panel)}
+.pi-ico{font-size:19px;color:var(--rc);width:26px;text-align:center}
+.pi-tema-txt{min-width:170px}
+.pi-tema-n{display:block;font-size:13.5px;font-weight:500;color:var(--ink)}
+@media (max-width:820px){.pi-tabla{font-size:12px}.pi-tabla th:nth-child(2),.pi-tabla td:nth-child(2){display:none}}
