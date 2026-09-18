@@ -156,19 +156,6 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Muestra cada categoria con su precio promedio redondeado a dos decimales (columna prom), solo de las categorias cuyo promedio pase de 300. Ordena por prom descendente.",
         sol: "SELECT p.categoria, ROUND(AVG(p.precio),2) AS prom FROM productos p GROUP BY p.categoria HAVING AVG(p.precio) > 300 ORDER BY prom DESC;",
         pista: "GROUP BY por categoria, el promedio en el SELECT con ROUND, y la condicion del promedio en HAVING." }
-    ]},
-    { titulo: "COUNT(*) contra COUNT(columna)", bloques: [
-      { t: "texto", txt: "Parecen lo mismo y no lo son. El asterisco cuenta filas; una columna cuenta solo sus valores no nulos." },
-      { t: "codigo", sql: "SELECT COUNT(*)              AS filas,\n       COUNT(p.descripcion) AS con_descripcion\n  FROM productos p;", explica: "La diferencia entre los dos numeros son los productos sin descripcion." },
-      { t: "nota", tono: "regla", txt: "Esta distincion va a decidir si un reporte con LEFT JOIN sale bien o sale mal. Guardala." }
-    ]},
-    { titulo: "Ordenar por lo que calculaste", bloques: [
-      { t: "texto", txt: "Al alias del SELECT se le puede pedir el orden. Es mas legible que repetir toda la expresion." },
-      { t: "codigo", sql: "SELECT p.categoria,\n       SUM(p.precio * p.stock) AS valor\n  FROM productos p\n GROUP BY p.categoria\n ORDER BY valor DESC;" },
-      { t: "nota", tono: "dato", txt: "En PostgreSQL el ORDER BY si acepta el alias, porque se evalua despues del SELECT. En el WHERE no funciona: ahi el alias todavia no existe." },
-      { t: "prueba", pide: "Por cada puesto muestra cuantos empleados hay (columna n), solo de los puestos con mas de dos. Ordena por n descendente.",
-        sol: "SELECT e.puesto, COUNT(*) AS n FROM empleados e GROUP BY e.puesto HAVING COUNT(*) > 2 ORDER BY n DESC;",
-        pista: "GROUP BY por puesto, el filtro sobre el conteo va en HAVING, y el ORDER BY puede usar el alias n." }
     ]}
   ]
 },
@@ -483,6 +470,34 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Borra de la tabla productos todos los de la categoria 'Accesorios'.",
         sol: "DELETE FROM productos WHERE categoria = 'Accesorios';",
         pista: "Usa DELETE FROM y filtra con WHERE igual que en un SELECT." }
+    ]},
+    { titulo: "Lo que se borra se lleva a sus vecinos", bloques: [
+      { t: "texto", txt: "Una fila casi nunca esta sola. Si otra tabla la referencia con una llave foranea, el motor no te deja borrarla, y hace bien: te esta avisando que ibas a dejar huerfano un registro." },
+      { t: "codigo", sql: "SELECT COUNT(*) AS ventas_del_producto\n  FROM ventas v\n WHERE v.producto_id = 3;", explica: "Antes de borrar el producto 3, mira cuantas ventas lo apuntan." },
+      { t: "nota", tono: "regla", txt: "Cuando el motor rechaza un DELETE por una llave foranea, la respuesta casi nunca es forzarlo. Es preguntarse si ese dato deberia desaparecer o solo marcarse como inactivo." }
+    ]},
+    { titulo: "Borrado logico: la alternativa que casi siempre gana", bloques: [
+      { t: "texto", txt: "En sistemas reales rara vez se borra de verdad. Se marca la fila como inactiva y se deja de mostrar. El historial sobrevive y el error se puede deshacer." },
+      { t: "codigo", sql: "UPDATE productos p\n   SET descontinuado = 1\n WHERE p.stock = 0;", explica: "Nadie perdio nada. El producto deja de ofrecerse y sus ventas viejas siguen cuadrando." },
+      { t: "tabla", cab: ["", "Borrado fisico", "Borrado logico"], filas: [
+        ["sentencia", "DELETE", "UPDATE de una bandera"],
+        ["historial", "se pierde", "se conserva"],
+        ["reversible", "solo en transaccion", "siempre"],
+        ["consultas", "mas simples", "hay que filtrar siempre"]
+      ]},
+      { t: "nota", tono: "dato", txt: "El precio del borrado logico es que cada consulta tiene que acordarse de filtrar. El dia que alguien lo olvide, un producto descontinuado aparecera en el catalogo." }
+    ]},
+    { titulo: "La regla de los tres pasos", bloques: [
+      { t: "texto", txt: "Todo borrado en produccion sigue la misma secuencia. Saltarse el primer paso es como se pierden las tardes." },
+      { t: "tabla", cab: ["#", "Paso", "Para que"], filas: [
+        ["1", "SELECT con el mismo WHERE", "ver exactamente cuantas y cuales filas caen"],
+        ["2", "Respaldo o transaccion abierta", "poder volver atras"],
+        ["3", "DELETE con ese WHERE identico", "ejecutar lo que ya verificaste"]
+      ]},
+      { t: "codigo", sql: "SELECT p.id, p.nombre, p.precio\n  FROM productos p\n WHERE p.precio < 300\n   AND NOT EXISTS (SELECT 1 FROM ventas v WHERE v.producto_id = p.id);", explica: "El paso 1 del jefe de este reino. Dos filas: ese es el alcance." },
+      { t: "prueba", pide: "Practica el paso 1: cuenta cuantas ventas tienen un total menor a 150. Llama a la columna n.",
+        sol: "SELECT COUNT(*) AS n FROM ventas v WHERE v.total < 150;",
+        pista: "COUNT(*) con su alias, y el filtro sobre la columna total." }
     ]}
   ]
 }

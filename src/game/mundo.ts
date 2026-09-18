@@ -4,7 +4,7 @@ import AVANZADO from "./ejercicios_avanzado.js";
 import VACIO from "./ejercicios_vacio.js";
 export type Check = { tipo: "rows"; ordered?: boolean } | { tipo: "state"; tabla: string; constraints?: boolean };
 export interface Ejercicio {
-  n: number; dif: string; tema: "SELECT" | "UPDATE" | "ALTER"; titulo: string; bloque: string;
+  n: number; dif: string; tema: "SELECT" | "UPDATE" | "ALTER" | "DELETE"; titulo: string; bloque: string;
   pide: string; tips?: string[]; pistas: string[]; sol: string; check: Check;
   aprende: string; reto?: string; cadena?: string; paso?: number;
 }
