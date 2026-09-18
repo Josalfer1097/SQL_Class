@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { REINOS, esJefe, reinoDe, porN, COSTO_PISTA, COSTO_SOLUCION } from "./mundo";
+import { LECCIONES } from "./lecciones";
+const LECCIONES_XP: Record<string, number> = Object.fromEntries(LECCIONES.map((l) => [l.reino, l.xp]));
 
 /* ---------- personaje ---------- */
 export type Silueta = "a" | "b";                       // a: ancha, b: estilizada
@@ -66,10 +68,11 @@ export interface Progreso {
   intentos: Record<number, number>;
   sqlGuardado: Record<number, string>;
   reinosConquistados: string[];
+  leccionesHechas: string[];          // reinos cuya leccion ya se leyo
 }
 
 export interface Estado {
-  pantalla: "intro" | "creador" | "mapa" | "nivel";
+  pantalla: "intro" | "creador" | "mapa" | "nivel" | "leccion";
   personaje: Personaje | null;
   progreso: Progreso;
   nivelActual: number | null;
@@ -79,7 +82,7 @@ export interface Estado {
 const CLAVE = "sql_quest_v1";
 
 const progresoInicial = (): Progreso => ({
-  xp: 0, resueltos: [], pistasVistas: {}, solucionesVistas: [], intentos: {}, sqlGuardado: {}, reinosConquistados: []
+  xp: 0, resueltos: [], pistasVistas: {}, solucionesVistas: [], intentos: {}, sqlGuardado: {}, reinosConquistados: [], leccionesHechas: []
 });
 
 function cargar(): Estado {
@@ -87,7 +90,7 @@ function cargar(): Estado {
     const raw = localStorage.getItem(CLAVE);
     if (raw) {
       const d = JSON.parse(raw) as Estado;
-      if (d && d.progreso) return { ...d, personaje: normalizar(d.personaje), pantalla: d.personaje ? "mapa" : "intro", nivelActual: null };
+      if (d && d.progreso) return { ...d, progreso: { ...progresoInicial(), ...d.progreso }, personaje: normalizar(d.personaje), pantalla: d.personaje ? "mapa" : "intro", nivelActual: null };
     }
   } catch { /* sin almacenamiento: se juega sin guardar */ }
   return { pantalla: "intro", personaje: null, progreso: progresoInicial(), nivelActual: null, reinoActual: null };
@@ -112,6 +115,14 @@ export const acciones = {
   irA(pantalla: Estado["pantalla"]) { set({ pantalla }); },
   crearPersonaje(p: Personaje) { set({ personaje: p, pantalla: "mapa" }); },
   editarPersonaje() { set({ pantalla: "creador" }); },
+  abrirLeccion(reino: string) { set({ reinoActual: reino, pantalla: "leccion" }); },
+  completarLeccion(reino: string): number {
+    const p = estado.progreso;
+    if (p.leccionesHechas.includes(reino)) return 0;
+    const l = LECCIONES_XP[reino] || 60;
+    setProgreso({ xp: p.xp + l, leccionesHechas: [...p.leccionesHechas, reino] });
+    return l;
+  },
   abrirNivel(n: number) { set({ nivelActual: n, reinoActual: reinoDe(n).id, pantalla: "nivel" }); },
   volverAlMapa() { set({ pantalla: "mapa", nivelActual: null }); },
   guardarSql(n: number, sql: string) {
@@ -179,6 +190,7 @@ export function reinoDesbloqueado(id: string, p: Progreso): boolean {
 export function nivelDesbloqueado(n: number, p: Progreso): boolean {
   const r = reinoDe(n);
   if (!reinoDesbloqueado(r.id, p)) return false;
+  if (!p.leccionesHechas.includes(r.id)) return false;   // primero la leccion
   const i = r.niveles.indexOf(n);
   if (i === 0) return true;
   // dentro del reino, se avanza en orden; el jefe exige todos los anteriores

@@ -300,3 +300,80 @@ table.res td.null{color:var(--faint);font-style:italic}table.res td.num{text-ali
   .xpbar{width:140px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ================= lecciones ================= */
+.leccion-card{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;
+  padding:14px 16px;border-radius:14px;margin:0 0 12px;border:1px solid color-mix(in srgb,var(--rc) 45%,transparent);
+  background:linear-gradient(115deg,color-mix(in srgb,var(--rc) 16%,transparent),transparent 70%);transition:all .18s var(--ease)}
+.leccion-card:hover{transform:translateY(-2px);box-shadow:0 14px 34px -20px var(--rc);border-color:var(--rc)}
+.leccion-card.hecha{border-color:rgba(45,212,167,.35);background:rgba(45,212,167,.07)}
+.lc-ico{font-size:22px;text-align:center}
+.leccion-card.hecha .lc-ico{color:var(--ok)}
+.lc-t{display:block;font-weight:600;font-size:15px}
+.lc-b{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:2px}
+.lc-ir{font-family:var(--mono);font-size:12px;color:var(--rc)}
+.lec-candado{margin:-4px 0 14px;font-size:12.5px;color:var(--faint);font-style:italic}
+
+.pantalla.leccion{min-height:100vh;display:flex;flex-direction:column}
+.lec-top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--edge)}
+.lec-cuenta{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.lec-barra{height:3px;background:var(--edge2)}
+.lec-barra i{display:block;height:100%;background:var(--iris);background-size:200%;transition:width .5s var(--ease)}
+.lec-cuerpo{max-width:860px;margin:0 auto;padding:32px 22px 80px;width:100%}
+.lec-cab h1{font-family:var(--epico);font-size:clamp(26px,4vw,38px);margin:0 0 20px;line-height:1.1}
+.lec-intro{display:flex;gap:14px;align-items:flex-start;margin:0 0 26px}
+.lec-intro .burbuja{margin-top:14px}
+.lec-intro .burbuja::before{left:-8px;top:20px;transform:rotate(-45deg)}
+.lec-bloques{display:flex;flex-direction:column;gap:18px}
+.lec-bloque{animation:lecIn .4s var(--ease) both}
+@keyframes lecIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.lec-texto{margin:0;font-size:16.5px;line-height:1.72;color:var(--ink)}
+.lec-nota{border-radius:12px;padding:13px 16px;border-left:3px solid}
+.lec-nota .lbl{display:block;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.lec-nota p{margin:0;font-size:15px;line-height:1.6;color:var(--dim)}
+.lec-nota.ojo{background:rgba(255,59,92,.08);border-color:var(--bad)}
+.lec-nota.ojo .lbl{color:var(--bad)}
+.lec-nota.regla{background:rgba(255,176,92,.09);border-color:var(--warn)}
+.lec-nota.regla .lbl{color:var(--warn)}
+.lec-nota.dato{background:rgba(139,92,246,.1);border-color:var(--viol)}
+.lec-nota.dato .lbl{color:var(--lav)}
+.lec-tabla{border:1px solid var(--edge);border-radius:12px;overflow:auto}
+.lec-tabla table{border-collapse:collapse;width:100%;font-size:14px}
+.lec-tabla th{background:var(--panel2);color:var(--lav);text-align:left;padding:9px 13px;font-family:var(--mono);font-size:11.5px;font-weight:500;border-bottom:1px solid var(--edge)}
+.lec-tabla td{padding:9px 13px;border-bottom:1px solid var(--edge2);color:var(--dim)}
+.lec-tabla tr:last-child td{border-bottom:0}
+.lec-tabla td:first-child{color:var(--ink)}
+
+/* ejemplo ejecutable */
+.ejemplo{border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:var(--panel)}
+.ejemplo-cab{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--edge);
+  font-family:var(--mono);font-size:11px;color:var(--faint)}
+.ejemplo-sql{margin:0;padding:14px 16px;font-family:var(--mono);font-size:13.2px;line-height:1.62;white-space:pre;overflow-x:auto;background:#08050D}
+.ejemplo-explica{margin:0;padding:10px 16px;font-size:13.5px;color:var(--dim);background:rgba(139,92,246,.06);border-top:1px solid var(--edge2)}
+.ejemplo-res{border-top:1px solid var(--edge);max-height:260px;overflow:auto}
+.ejemplo .msg{margin:10px 14px}
+.btn.go.peq{padding:5px 12px;font-size:12px}
+.btn.warm.peq{padding:5px 12px;font-size:12px}
+.btn.busy{animation:pulse .5s var(--ease)}
+
+/* prueba dentro de la leccion */
+.pruebita{border:1.5px solid rgba(224,51,138,.35);border-radius:14px;overflow:hidden;background:rgba(224,51,138,.05)}
+.pruebita.bien{border-color:rgba(45,212,167,.5);background:rgba(45,212,167,.06)}
+.pruebita.mal{border-color:rgba(255,59,92,.45)}
+.pruebita-cab{padding:13px 16px}
+.pruebita-cab .lbl{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mag)}
+.pruebita-cab p{margin:5px 0 0;font-size:15.5px;line-height:1.55}
+.pruebita .edwrap{border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);height:130px}
+.pruebita-bar{display:flex;align-items:center;gap:9px;padding:10px 14px;flex-wrap:wrap}
+.ok-txt{font-family:var(--mono);font-size:12.5px;color:var(--ok)}
+.mal-txt{font-family:var(--mono);font-size:12px;color:var(--bad);max-width:60ch}
+.pruebita .note{margin:0 14px 14px}
+
+.lec-nav{display:flex;align-items:center;gap:12px;margin-top:34px;padding-top:22px;border-top:1px solid var(--edge);flex-wrap:wrap}
+.lec-aviso{font-size:12.5px;color:var(--faint);font-style:italic}
+.lec-fin{max-width:560px;margin:0 auto;padding:70px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.lec-fin h2{font-family:var(--epico);font-size:32px;margin:10px 0 4px}
+.lec-fin-txt{color:var(--dim);margin:0 0 6px}
+.xpgana.grande{font-family:var(--epico);font-size:34px;color:var(--warn);margin:8px 0}
+.lec-fin-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+@media (max-width:980px){.lec-cuerpo{padding:22px 16px 60px}.leccion-card{grid-template-columns:34px 1fr}.lc-ir{display:none}}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Avatar, Umbra } from "./Personajes";
 import { acciones, useJuego, personajeDefault, PIELES, CABELLOS, COLORES_CABELLO, COLORES_OJOS, COLORES_ROPA, COLORES_CAPA, ATUENDOS, reinoDesbloqueado, nivelDesbloqueado, totalNiveles, type Personaje } from "../game/store";
 import { REINOS, RANGOS, rangoDe, siguienteRango, porN, esJefe, UMBRA, frase } from "../game/mundo";
+import { leccionDe } from "../game/lecciones";
 
 /* ---------- burbuja de dialogo ---------- */
 export function Burbuja({ texto, quien = UMBRA.nombre, lado = "izq" }: { texto: string; quien?: string; lado?: "izq" | "der" }) {
@@ -211,13 +212,14 @@ export function Mapa() {
             const ok = reinoDesbloqueado(r.id, p);
             const conq = p.reinosConquistados.includes(r.id);
             const hechos = r.niveles.filter((n) => p.resueltos.includes(n)).length;
+            const conLeccion = p.leccionesHechas.includes(r.id);
             return (
               <button key={r.id} className={"reino " + (abierto === r.id ? "cur " : "") + (conq ? "conq " : "") + (ok ? "" : "lock")}
                 style={{ ["--rc" as string]: r.color }} onClick={() => setAbierto(r.id)}>
                 <span className="reino-ico">{ok ? r.icono : "🔒"}</span>
                 <span className="reino-txt">
                   <span className="reino-n">{i + 1}. {r.nombre}</span>
-                  <span className="reino-p">{conq ? "conquistado" : ok ? `${hechos} / ${r.niveles.length}` : "sellado"}</span>
+                  <span className="reino-p">{conq ? "conquistado" : ok ? (conLeccion ? `${hechos} / ${r.niveles.length}` : "leccion pendiente") : "sellado"}</span>
                 </span>
               </button>
             );
@@ -239,6 +241,25 @@ export function Mapa() {
             <Umbra size={130} humor={desbl ? "burlon" : "serio"} />
             <Burbuja texto={desbl ? (p.reinosConquistados.includes(reino.id) ? reino.victoria : reino.intro) : "Este reino esta sellado. Derrota al jefe del reino anterior y la puerta se abre sola. Es magia, o burocracia; nunca supe cual."} />
           </div>
+
+          {desbl && leccionDe(reino.id) && (
+            <button className={"leccion-card " + (p.leccionesHechas.includes(reino.id) ? "hecha" : "")}
+              onClick={() => acciones.abrirLeccion(reino.id)}>
+              <span className="lc-ico">{p.leccionesHechas.includes(reino.id) ? "✓" : "📖"}</span>
+              <span className="lc-txt">
+                <span className="lc-t">Leccion · {leccionDe(reino.id)!.titulo}</span>
+                <span className="lc-b">
+                  {p.leccionesHechas.includes(reino.id)
+                    ? "ya la leiste · puedes repasarla cuando quieras"
+                    : `${leccionDe(reino.id)!.pasos.length} pasos con ejemplos que puedes ejecutar · ${leccionDe(reino.id)!.xp} XP`}
+                </span>
+              </span>
+              <span className="lc-ir">{p.leccionesHechas.includes(reino.id) ? "repasar" : "empezar"} →</span>
+            </button>
+          )}
+          {desbl && !p.leccionesHechas.includes(reino.id) && (
+            <p className="lec-candado">Los desafios se abren cuando termines la leccion. Umbra insiste en que primero se estudia.</p>
+          )}
 
           <div className="niveles">
             {reino.niveles.map((n, i) => {

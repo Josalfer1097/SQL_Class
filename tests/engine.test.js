@@ -87,3 +87,33 @@ test("formatear no altera el resultado de ninguna solucion", () => {
     assert.equal(a.ok, b.ok, "ejercicio " + e.n);
   });
 });
+
+/* ---------- lecciones ---------- */
+import { LECCIONES } from "../src/game/lecciones.ts";
+
+test("hay una leccion por reino y todo su SQL ejecuta", () => {
+  assert.equal(LECCIONES.length, 10, "una leccion por reino");
+  const malos = [];
+  LECCIONES.forEach((l) => {
+    l.pasos.forEach((paso) => {
+      paso.bloques.forEach((b) => {
+        if (b.t !== "codigo" && b.t !== "prueba") return;
+        const sql = b.t === "codigo" ? b.sql : b.sol;
+        try {
+          const r = ENG.execute(sql, SEED.construirDB());
+          const last = r[r.length - 1];
+          if (last.command === "SELECT" && last.count === 0) malos.push(l.reino + " :: resultado vacio");
+        } catch (e) { malos.push(l.reino + " :: " + e.message.slice(0, 50)); }
+      });
+    });
+  });
+  assert.deepEqual(malos, []);
+});
+
+test("cada leccion tiene al menos un ejemplo ejecutable y una prueba", () => {
+  const flojas = LECCIONES.filter((l) => {
+    const bloques = l.pasos.flatMap((p) => p.bloques);
+    return !bloques.some((b) => b.t === "codigo") || !bloques.some((b) => b.t === "prueba");
+  }).map((l) => l.reino);
+  assert.deepEqual(flojas, []);
+});
