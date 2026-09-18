@@ -1,15 +1,15 @@
 import BASE from "./ejercicios_base.js";
 import CADENA from "./ejercicios_cadena.js";
 import AVANZADO from "./ejercicios_avanzado.js";
-
+import VACIO from "./ejercicios_vacio.js";
 export type Check = { tipo: "rows"; ordered?: boolean } | { tipo: "state"; tabla: string; constraints?: boolean };
 export interface Ejercicio {
   n: number; dif: string; tema: "SELECT" | "UPDATE" | "ALTER"; titulo: string; bloque: string;
-  pide: string; tips?: string[]; pista: string; sol: string; check: Check;
+  pide: string; tips?: string[]; pistas: string[]; sol: string; check: Check;
   aprende: string; reto?: string; cadena?: string; paso?: number;
 }
 
-export const EJERCICIOS: Ejercicio[] = ([] as Ejercicio[]).concat(BASE as Ejercicio[], CADENA as Ejercicio[], AVANZADO as Ejercicio[]);
+export const EJERCICIOS: Ejercicio[] = ([] as Ejercicio[]).concat(BASE as Ejercicio[], CADENA as Ejercicio[], AVANZADO as Ejercicio[], VACIO as Ejercicio[]);
 export const porN = (n: number) => EJERCICIOS.find((e) => e.n === n)!;
 
 export interface Reino {
@@ -89,6 +89,13 @@ export const REINOS: Reino[] = [
     color: "#7CD5FF", icono: "✦", niveles: [41, 42, 43, 44, 45, 46, 47, 48], xpNivel: 120, xpJefe: 320,
     intro: "La Cima. Pocos llegan. Aqui una fila conoce a sus vecinas sin dejar de ser ella misma. Se llama ventana, y cambia como piensas el SQL.",
     victoria: "Llegaste a la Cima. Ya no necesitas un maestro encapuchado. Aunque, seamos honestos, me vas a extranar."
+  },
+  {
+    id: "vacio", nombre: "El Vacio", lema: "Cualquiera sabe hacer un SELECT. Se necesita verdadera precision para un DELETE.",
+    descripcion: "DELETE, TRUNCATE y las catastrofes de olvidar el WHERE.",
+    color: "#A0AEC0", icono: "∅", niveles: [49, 50, 51, 52], xpNivel: 130, xpJefe: 350,
+    intro: "El Vacio. Al fin llegas a la destruccion. Borrar es el mayor poder que tendras; usalo mal y te quedaras sin trabajo antes del almuerzo.",
+    victoria: "Vaciaste lo que debias y dejaste lo demas intacto. Casi pareces un profesional. Casi."
   }
 ];
 
@@ -112,8 +119,8 @@ export const rangoDe = (xp: number) => [...RANGOS].reverse().find((r) => xp >= r
 export const siguienteRango = (xp: number) => RANGOS.find((r) => r.min > xp) || null;
 
 /* ---------- costos ---------- */
-export const COSTO_PISTA = 10;
-export const COSTO_SOLUCION = 40;
+export const COSTO_PISTA = [8, 16, 28];   // cada pista siguiente cuesta mas
+export const COSTO_SOLUCION = 55;
 
 /* ---------- frases del Maestro ---------- */
 export const UMBRA = {
@@ -147,10 +154,24 @@ export const UMBRA = {
     "El motor te escupio un error. Leelo: los errores son cartas de amor con mala ortografia.",
     "No compila, no ejecuta, no existe. Pero todo se arregla."
   ],
-  pista: [
-    "Te doy una pista. Cobro poco, pero cobro.",
-    "Esta bien. Una pista. No se la cuentes a nadie.",
-    "Pista concedida. Mi reputacion de maestro cruel se resiente."
+  pista1: [
+    "Te empujo en la direccion correcta. Nada mas.",
+    "Una idea, no una respuesta. Cobro poco, pero cobro.",
+    "Ahi va la primera. Todavia tienes que pensar."
+  ],
+  pista2: [
+    "Segunda pista. Ahora si te digo que herramienta usar.",
+    "Esta te cuesta mas, y con razon: ya es casi el camino.",
+    "Te nombro las piezas. Armarlas sigue siendo tu trabajo."
+  ],
+  pista3: [
+    "Ultima pista, y es la cara. Te doy la forma con huecos; los huecos son tuyos.",
+    "Hasta aqui llego mi generosidad. Lo demas lo escribes tu.",
+    "Te dejo el molde. Si tambien quieres el contenido, eso ya es la solucion, y esa cuesta mas."
+  ],
+  sinPistas: [
+    "Ya no hay mas pistas. Tres son suficientes para cualquiera, incluso para ti.",
+    "Se acabaron. La siguiente puerta que puedo abrirte es la solucion completa, y sale cara."
   ],
   solucion: [
     "Aqui tienes la solucion. Escribela tu, no la copies: copiar no deja callo en los dedos.",

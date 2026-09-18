@@ -15,7 +15,7 @@ function err(msg, hint) { throw new SqlError(msg, hint); }
 /* ---------------- tokenizer ---------------- */
 var KEYWORDS = ("select from where group by having order asc desc limit offset distinct as and or not in between like ilike is null " +
 "join inner left right full outer cross on using union all case when then else end with exists insert into values update set delete " +
-"alter table add drop column rename to constraint primary key foreign references unique check default type create index " +
+"truncate alter table add drop column rename to constraint primary key foreign references unique check default type create index " +
 "commit rollback begin returning true false over partition cascade if exists").split(" ");
 var KWSET = {}; KEYWORDS.forEach(function (k) { KWSET[k] = 1; });
 
@@ -91,6 +91,7 @@ Parser.prototype.parseStatement = function () {
     case "with": return this.parseWith();
     case "update": return this.parseUpdate();
     case "delete": return this.parseDelete();
+    case "truncate": return this.parseTruncate();
     case "insert": return this.parseInsert();
     case "alter": return this.parseAlter();
     case "create": err("CREATE no esta disponible en esta consola", "Las tablas del curso ya existen; usa SELECT, UPDATE o ALTER.");
@@ -114,6 +115,7 @@ Parser.prototype.parseWith = function () {
   if (this.isKw("select")) main = this.parseSelect();
   else if (this.isKw("update")) main = this.parseUpdate();
   else if (this.isKw("delete")) main = this.parseDelete();
+  else if (this.isKw("truncate")) main = this.parseTruncate();
   else if (this.isKw("insert")) main = this.parseInsert();
   else this.fail("despues de los CTE se esperaba SELECT, UPDATE, DELETE o INSERT");
   main.ctes = ctes;
@@ -326,6 +328,12 @@ Parser.prototype.parseUpdate = function () {
   var where = null;
   if (this.eatKw("where")) where = this.parseExpr();
   return { kind: "update", table: tr, sets: sets, from: from, where: where };
+};
+Parser.prototype.parseTruncate = function () {
+  this.expectKw("truncate");
+  this.eatKw("table");
+  var tr = this.parseTableRef();
+  return { kind: "truncate", table: tr };
 };
 Parser.prototype.parseDelete = function () {
   this.expectKw("delete"); this.expectKw("from");
@@ -982,6 +990,11 @@ function runUpdate(node, db) {
   t.rows = newRows;
   return { command: "UPDATE", count: n };
 }
+function runTruncate(node, db) {
+  var tname = node.table.name, t = tableRows(db, tname);
+  t.rows = [];
+  return { command: "TRUNCATE", count: 0 };
+}
 function runDelete(node, db) {
   var tname = node.table.name, alias = node.table.alias, t = tableRows(db, tname), n = 0;
   t.rows = t.rows.filter(function (r) {
@@ -1094,6 +1107,7 @@ function execute(sql, db) {
     if (st.kind === "select") { var r = runSelect(st, db, null); results.push({ command: "SELECT", cols: r.cols, rows: r.rows, count: r.rows.length }); }
     else if (st.kind === "update") results.push(runUpdate(st, db));
     else if (st.kind === "delete") results.push(runDelete(st, db));
+    else if (st.kind === "truncate") results.push(runTruncate(st, db));
     else if (st.kind === "insert") results.push(runInsert(st, db));
     else if (st.kind === "alter") results.push(runAlter(st, db));
   });

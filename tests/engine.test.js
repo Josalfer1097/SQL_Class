@@ -53,10 +53,31 @@ test("las 48 soluciones de referencia pasan su propia revision", () => {
 
 test("el revisor acepta variantes correctas y rechaza incorrectas", () => {
   const e1 = TODOS.find((e) => e.n === 1);
-  assert.ok(REV.revisar("select sku, nombre, precio from productos order by precio desc", e1).ok);
-  assert.ok(!REV.revisar("SELECT p.sku, p.nombre, p.precio FROM productos p ORDER BY p.precio ASC;", e1).ok);
+  assert.ok(REV.revisar("select nombre, categoria, stock from productos order by stock desc", e1).ok, "variante en minusculas y sin alias");
+  assert.ok(!REV.revisar("SELECT p.nombre, p.categoria, p.stock FROM productos p ORDER BY p.stock ASC;", e1).ok, "orden invertido");
   const e23 = TODOS.find((e) => e.n === 23);
-  assert.ok(!REV.revisar("SELECT s.nombre, COUNT(*) AS empleados FROM sucursales s LEFT JOIN empleados e ON e.sucursal_id = s.id GROUP BY s.nombre ORDER BY s.nombre;", e23).ok);
+  assert.ok(!REV.revisar("SELECT p.nombre, COUNT(*) AS ventas FROM productos p LEFT JOIN ventas v ON v.producto_id = p.id GROUP BY p.id, p.nombre ORDER BY ventas, p.id;", e23).ok, "COUNT(*) con LEFT JOIN");
+});
+
+test("cada ejercicio tiene exactamente 3 pistas y ninguna es la solucion", () => {
+  const sinTres = TODOS.filter((e) => !Array.isArray(e.pistas) || e.pistas.length !== 3).map((e) => e.n);
+  assert.deepEqual(sinTres, [], "todos deben tener 3 pistas");
+  const limpio = (s) => s.replace(/\s+/g, "").toLowerCase();
+  const filtradas = TODOS.filter((e) => e.pistas.some((p) => limpio(p) === limpio(e.sol))).map((e) => e.n);
+  assert.deepEqual(filtradas, [], "ninguna pista puede ser la solucion literal");
+  /* una pista puede mostrar la forma de la consulta, pero siempre con huecos: "___" o "..." */
+  const sinHuecos = TODOS.filter((e) => e.pistas.some((p) =>
+    /^(SELECT|UPDATE|ALTER|WITH|INSERT|DELETE)/i.test(p.trim()) && !p.includes("_") && !p.includes("...")
+  )).map((e) => e.n);
+  assert.deepEqual(sinHuecos, [], "una pista con forma de consulta debe llevar huecos, no la respuesta");
+
+  /* las tres pistas deben ser distintas entre si */
+  const repetidas = TODOS.filter((e) => new Set(e.pistas.map(limpio)).size !== 3).map((e) => e.n);
+  assert.deepEqual(repetidas, [], "las tres pistas deben ser distintas");
+
+  /* la primera pista orienta, no da sintaxis: no debe empezar con una palabra clave de SQL */
+  const primeraMuyDirecta = TODOS.filter((e) => /^(SELECT|UPDATE|ALTER|WITH|WHERE|GROUP|ORDER)/i.test(e.pistas[0].trim())).map((e) => e.n);
+  assert.deepEqual(primeraMuyDirecta, [], "la pista 1 debe orientar el concepto, no dar sintaxis");
 });
 
 test("formatear no altera el resultado de ninguna solucion", () => {

@@ -103,6 +103,12 @@ kbd{font-family:var(--mono);font-size:10.5px;background:rgba(0,0,0,.34);border:1
 .swatch{width:30px;height:30px;border-radius:50%;border:2px solid transparent;transition:transform .15s;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
 .swatch:hover{transform:scale(1.12)}
 .swatch.on{border-color:#fff;box-shadow:0 0 0 2px var(--mag)}
+.tabs-creador{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--edge)}
+.tab-c{padding:8px 16px;font-size:13.5px;color:var(--faint);border-bottom:2px solid transparent;transition:color .15s}
+.tab-c:hover{color:var(--dim)}
+.tab-c.on{color:var(--ink);border-bottom-color:var(--mag)}
+.nota-atuendo{margin:-8px 0 14px;font-size:13px;color:var(--faint);font-style:italic}
+.nota-inline{font-size:12px;color:var(--faint);align-self:center}
 .error-inline{color:var(--bad);font-size:13.5px;margin:0 0 10px}
 .acciones-creador{display:flex;gap:10px;margin-top:22px}
 

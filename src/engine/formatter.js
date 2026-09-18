@@ -7,7 +7,7 @@ var ENG = root.SQLEngine;
 var RIVER = 6; // ancho de "SELECT"
 function pad(kw) { return " ".repeat(Math.max(0, RIVER - kw.length)) + kw; }
 
-var PRINCIPALES = { select: 1, from: 1, where: 1, group: 1, having: 1, order: 1, limit: 1, offset: 1, update: 1, set: 1, delete: 1, insert: 1, values: 1, alter: 1, with: 1 };
+var PRINCIPALES = { select: 1, from: 1, where: 1, group: 1, having: 1, order: 1, limit: 1, offset: 1, update: 1, set: 1, delete: 1, truncate: 1, insert: 1, values: 1, alter: 1, with: 1 };
 var JOINS = { join: 1, inner: 1, left: 1, right: 1, full: 1, cross: 1 };
 var FUNCS = {};
 ("count sum avg min max round coalesce nullif upper lower length trim abs extract greatest least " +
@@ -55,9 +55,10 @@ function formatear(sql) {
       if ((v === "group" || v === "order") && toks[i + 1] && toks[i + 1].value === "by") { kw += " BY"; salto = 2; }
       if (v === "insert" && toks[i + 1] && toks[i + 1].value === "into") { kw += " INTO"; salto = 2; }
       if (v === "delete" && toks[i + 1] && toks[i + 1].value === "from") { kw += " FROM"; salto = 2; }
+      if (v === "truncate" && toks[i + 1] && toks[i + 1].value === "table") { kw += " TABLE"; salto = 2; }
       push();
       caseCol = null;
-      if (kw === "SELECT" || kw === "UPDATE" || kw === "INSERT INTO" || kw === "DELETE FROM" || kw === "ALTER" || kw === "VALUES") linea = kw;
+      if (kw === "SELECT" || kw === "UPDATE" || kw === "INSERT INTO" || kw === "DELETE FROM" || kw === "TRUNCATE" || kw === "TRUNCATE TABLE" || kw === "ALTER" || kw === "VALUES") linea = kw;
       else if (kw === "GROUP BY" || kw === "ORDER BY") linea = " " + kw;
       else linea = pad(kw);
       i += salto;

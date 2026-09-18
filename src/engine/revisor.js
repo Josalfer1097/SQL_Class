@@ -123,7 +123,7 @@ function mismasFilas(a, b, ordered) {
 }
 
 /* ---------- analisis de estilo y riesgos ---------- */
-var KW_RE = /\b(select|from|where|group\s+by|having|order\s+by|limit|offset|distinct|inner\s+join|left\s+join|right\s+join|full\s+join|join|on|and|or|not|in|between|like|is\s+null|is\s+not\s+null|case|when|then|else|end|update|set|alter\s+table|add|drop|column|rename|constraint|check|unique|foreign\s+key|references|default|exists|as|values|insert\s+into|delete)\b/gi;
+var KW_RE = /\b(select|from|where|group\s+by|having|order\s+by|limit|offset|distinct|inner\s+join|left\s+join|right\s+join|full\s+join|join|on|and|or|not|in|between|like|is\s+null|is\s+not\s+null|case|when|then|else|end|update|set|alter\s+table|add|drop|column|rename|constraint|check|unique|foreign\s+key|references|default|exists|as|values|insert\s+into|delete|truncate)\b/gi;
 
 function analizar(sql, ej, ejec) {
   var m = [], sinCom = sql.replace(/--[^\n]*/g, "").replace(/'[^']*'/g, "''");

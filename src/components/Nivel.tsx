@@ -6,7 +6,8 @@ import FMT from "../engine/formatter.js";
 import { Editor, Tabla, pintar, type EsquemaVivo } from "./Editor";
 import { Avatar, Umbra } from "./Personajes";
 import { Burbuja } from "./Pantallas";
-import { acciones, useJuego, nivelDesbloqueado } from "../game/store";
+import { acciones, useJuego, nivelDesbloqueado, type Progreso } from "../game/store";
+const hecho0 = (p: Progreso, n: number) => p.resueltos.includes(n);
 import { EJERCICIOS, porN, reinoDe, esJefe, UMBRA, frase, COSTO_PISTA, COSTO_SOLUCION } from "../game/mundo";
 
 REV.setEjercicios(EJERCICIOS);
@@ -54,7 +55,11 @@ export function Nivel() {
   const [gano, setGano] = useState<{ xp: number; reino: string | null } | null>(null);
   const [modelo, setModelo] = useState(false);
   const [status, setStatus] = useState("");
-  const [verPista, setVerPista] = useState(p.pistasVistas.includes(n) || p.resueltos.includes(n));
+  const [fx, setFx] = useState<{ tipo: "ok" | "mal" | "run" | null; k: number }>({ tipo: null, k: 0 });
+  const [escribiendo, setEscribiendo] = useState(false);
+  const escRef = useRef<number | null>(null);
+  const disparar = (tipo: "ok" | "mal" | "run") => setFx((f) => ({ tipo, k: f.k + 1 }));
+  const pistasAbiertas = hecho0(p, n) ? 3 : (p.pistasVistas[n] || 0);
   const [verSol, setVerSol] = useState(p.solucionesVistas.includes(n) || p.resueltos.includes(n));
   const guardaRef = useRef<number | null>(null);
 
@@ -68,9 +73,19 @@ export function Nivel() {
     guardaRef.current = window.setTimeout(() => acciones.guardarSql(n, sql), 400);
   }, [sql, n]);
 
+  /* mientras escribes, Umbra te mira: se queda seria y la escena vibra apenas */
+  useEffect(() => {
+    if (!sql) return;
+    setEscribiendo(true);
+    if (escRef.current) window.clearTimeout(escRef.current);
+    escRef.current = window.setTimeout(() => setEscribiendo(false), 900);
+    return () => { if (escRef.current) window.clearTimeout(escRef.current); };
+  }, [sql]);
+
   /* ---------- ejecutar ---------- */
   function ejecutar() {
-    if (!sql.trim()) { setStatus("escribe algo primero"); return; }
+    if (!sql.trim()) { setStatus("escribe algo primero"); disparar("mal"); return; }
+    disparar("run");
     const t0 = performance.now();
     const base = db;
     const tabla = tablaTocada(sql);
@@ -91,7 +106,7 @@ export function Nivel() {
     catch (err: any) {
       setErrRun({ message: err.message, hint: err.hint }); setRes(null); setVista(null);
       setStatus("fallo en " + (performance.now() - t0).toFixed(1) + " ms"); setPane("msg");
-      setHabla({ txt: frase(UMBRA.error), humor: "burlon" });
+      setHabla({ txt: frase(UMBRA.error), humor: "burlon" }); disparar("mal");
       return;
     }
     const ms = (performance.now() - t0).toFixed(1);
@@ -120,22 +135,24 @@ export function Nivel() {
     const r = REV.revisar(sql, e) as Revision;
     acciones.intento(n);
     setRev(r); setPane("rev");
-    if (r.error) { setHabla({ txt: frase(UMBRA.error), humor: "burlon" }); setStatus("no corrio"); return; }
+    if (r.error) { setHabla({ txt: frase(UMBRA.error), humor: "burlon" }); setStatus("no corrio"); disparar("mal"); return; }
     if (r.ok) {
       const g = acciones.resolver(n);
       setGano(g.primeraVez ? { xp: g.xp, reino: g.reinoConquistado } : null);
       setHabla({ txt: g.reinoConquistado ? reino.victoria : frase(r.mejoras.length ? UMBRA.acierto : UMBRA.aciertoLimpio), humor: "feliz" });
-      setStatus("resuelto"); setVerPista(true); setVerSol(true);
-    } else { setHabla({ txt: frase(UMBRA.fallo), humor: "burlon" }); setStatus("revisado"); }
+      setStatus("resuelto"); setVerSol(true); disparar("ok");
+    } else { setHabla({ txt: frase(UMBRA.fallo), humor: "burlon" }); setStatus("revisado"); disparar("mal"); }
   }
 
   function formatear() { try { const f = FMT.formatear(sql); if (f !== sql) { setSql(f); setStatus("reescrito con el formato del curso"); } } catch { /* nada */ } }
 
   function pista() {
-    if (verPista) return;
-    if (jefe && !hecho) { setHabla({ txt: "En un jefe no hay pistas. Ni por XP. Ni por cariño.", humor: "serio" }); return; }
-    if (acciones.pedirPista(n)) { setVerPista(true); setPane("rev"); setHabla({ txt: frase(UMBRA.pista), humor: "burlon" }); }
-    else setHabla({ txt: frase(UMBRA.sinXp), humor: "serio" });
+    if (jefe && !hecho) { setHabla({ txt: "En un jefe no hay pistas. Ni por XP. Ni por carino.", humor: "serio" }); return; }
+    if (pistasAbiertas >= 3) { setHabla({ txt: frase(UMBRA.sinPistas), humor: "burlon" }); setPane("rev"); return; }
+    const abierta = acciones.pedirPista(n);
+    if (abierta < 0) { setHabla({ txt: frase(UMBRA.sinXp), humor: "serio" }); return; }
+    setPane("rev");
+    setHabla({ txt: frase([UMBRA.pista1, UMBRA.pista2, UMBRA.pista3][abierta - 1]), humor: "burlon" });
   }
   function solucion() {
     if (verSol) return;
@@ -149,7 +166,7 @@ export function Nivel() {
   const puedeSeguir = siguiente !== null && nivelDesbloqueado(siguiente, j.progreso);
 
   return (
-    <div className="pantalla nivel" style={{ ["--rc" as string]: reino.color }}>
+    <div className={"pantalla nivel" + (escribiendo ? " escribiendo" : "") + (fx.tipo === "mal" ? " sacude" : "") + (fx.tipo === "ok" ? " celebra" : "")} key={fx.k + (fx.tipo || "")} style={{ ["--rc" as string]: reino.color }}>
       <header className="nivel-top">
         <button className="btn gh peq" onClick={() => acciones.volverAlMapa()}>← Mapa</button>
         <span className="reino-tag">{reino.icono} {reino.nombre}</span>
@@ -162,7 +179,7 @@ export function Nivel() {
       <div className="nivel-grid">
         {/* ---------- lateral: personaje, maestro y esquema ---------- */}
         <aside className="nivel-lado">
-          <div className="escena">
+          <div className={"escena" + (escribiendo ? " atento" : "") + (fx.tipo === "ok" ? " feliz" : "") + (fx.tipo === "mal" ? " nope" : "")}>
             {j.personaje && <div className="jugador"><Avatar p={j.personaje} size={120} /></div>}
             <div className="maestro"><Umbra size={150} humor={habla.humor} /></div>
           </div>
@@ -205,7 +222,9 @@ export function Nivel() {
             <button className="btn go" onClick={ejecutar}>Ejecutar <kbd>Ctrl+Enter</kbd></button>
             <button className="btn gh" onClick={revisar}>Revisar <kbd>Ctrl+K</kbd></button>
             <button className="btn gh" onClick={formatear}>Formato <kbd>Ctrl+L</kbd></button>
-            <button className="btn warm" onClick={pista} disabled={verPista}>{verPista ? "Pista vista" : `Pista · ${COSTO_PISTA} XP`}</button>
+            <button className="btn warm" onClick={pista} disabled={hecho || pistasAbiertas >= 3}>
+              {hecho ? "Pistas abiertas" : pistasAbiertas >= 3 ? "Sin mas pistas" : `Pista ${pistasAbiertas + 1} de 3 · ${COSTO_PISTA[pistasAbiertas]} XP`}
+            </button>
             <button className="btn warm" onClick={solucion} disabled={verSol}>{verSol ? "Solucion vista" : `Solucion · ${COSTO_SOLUCION} XP`}</button>
             {pila.length > 0 && <><button className="btn gh peq mag" onClick={deshacer}>↶ deshacer</button><button className="btn gh peq mag" onClick={restaurar}>⟲ restaurar</button></>}
             <span className="sp" />
@@ -232,8 +251,18 @@ export function Nivel() {
               )}
               {pane === "rev" && (
                 <div className="pane">
-                  {!rev && !verPista && !verSol && <div className="vacio">Pulsa Revisar y Umbra te dira si el reporte es el que pedia. Y como esta escrito.</div>}
-                  {verPista && !hecho && <div className="note riesgo"><span className="lbl">pista</span><p>{e.pista}</p></div>}
+                  {!rev && !pistasAbiertas && !verSol && <div className="vacio">Pulsa Revisar y Umbra te dira si el reporte es el que pedia. Y como esta escrito.</div>}
+                  {pistasAbiertas > 0 && !hecho && (
+                    <div className="pistas">
+                      {e.pistas.slice(0, pistasAbiertas).map((t, i) => (
+                        <div key={i} className="note riesgo pista-anim" style={{ animationDelay: i * 60 + "ms" }}>
+                          <span className="lbl">pista {i + 1}</span><p>{t}</p>
+                        </div>
+                      ))}
+                      {pistasAbiertas < 3 && <p className="mas-pistas">Quedan {3 - pistasAbiertas} pistas. La siguiente cuesta {COSTO_PISTA[pistasAbiertas]} XP y es mas concreta.</p>}
+                    </div>
+                  )}
+                  {hecho && <div className="pistas">{e.pistas.map((t, i) => (<div key={i} className="note estilo"><span className="lbl">pista {i + 1}</span><p>{t}</p></div>))}</div>}
                   {verSol && !hecho && <div className="note estilo"><span className="lbl">solucion</span><p>Asi se resuelve. Escribela tu: copiar no deja callo.</p></div>}
                   {verSol && !hecho && <div className="sol"><pre dangerouslySetInnerHTML={{ __html: pintar(e.sol) }} /><button className="btn gh peq" onClick={() => setSql(e.sol)}>Copiar al editor</button></div>}
                   {rev && <PanelRevision rev={rev} ej={e} gano={gano} siguiente={puedeSeguir ? siguiente : null} />}
@@ -251,8 +280,24 @@ export function Nivel() {
         </section>
       </div>
 
+      {fx.tipo === "ok" && <Confeti key={fx.k} />}
       {modelo && <Modelo db={db} original={original} onClose={() => setModelo(false)} />}
       <AtajosGlobales onModelo={() => setModelo((m) => !m)} onCerrar={() => setModelo(false)} onRun={ejecutar} onCheck={revisar} onFormat={formatear} />
+    </div>
+  );
+}
+
+/* ---------- lluvia de chispas al acertar ---------- */
+function Confeti() {
+  const trozos = Array.from({ length: 26 }, (_, i) => ({
+    i, x: 8 + Math.random() * 84, d: Math.random() * 420, dur: 1100 + Math.random() * 900,
+    c: ["#FFB05C", "#2DD4A7", "#E0338A", "#B794F6", "#7CD5FF"][i % 5], r: Math.random() * 360
+  }));
+  return (
+    <div className="confeti" aria-hidden="true">
+      {trozos.map((t) => (
+        <i key={t.i} style={{ left: t.x + "%", background: t.c, animationDelay: t.d + "ms", animationDuration: t.dur + "ms", ["--r" as string]: t.r + "deg" }} />
+      ))}
     </div>
   );
 }
