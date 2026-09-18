@@ -49,6 +49,26 @@ export const LECCIONES: Leccion[] = [
       { t: "texto", txt: "El SELECT no solo trae columnas: tambien calcula. Y a lo que calculas conviene ponerle nombre con AS, porque ese nombre es lo que vera quien lea el reporte." },
       { t: "codigo", sql: "SELECT p.nombre,\n       p.precio,\n       ROUND(p.precio * 1.16, 2) AS precio_con_iva\n  FROM productos p\n LIMIT 5;" },
       { t: "nota", tono: "dato", txt: "Sin AS, esa columna se llamaria round, que no le dice nada a nadie." }
+    ]},
+    { titulo: "Contar sin mirar todo", bloques: [
+      { t: "texto", txt: "A veces no quieres las filas: quieres saber cuantas son. COUNT(*) devuelve un solo numero." },
+      { t: "codigo", sql: "SELECT COUNT(*) AS cuantos\n  FROM productos;" },
+      { t: "texto", txt: "Y DISTINCT sirve para ver que valores distintos existen en una columna, sin repetirlos." },
+      { t: "codigo", sql: "SELECT DISTINCT p.categoria\n  FROM productos p\n ORDER BY p.categoria;" },
+      { t: "nota", tono: "dato", txt: "Es lo primero que se corre al llegar a una tabla desconocida: cuantas filas hay y que valores toma cada columna." }
+    ]},
+    { titulo: "Las cuatro tablas del Archivo", bloques: [
+      { t: "texto", txt: "Este mundo tiene cuatro tablas y conviene conocerlas antes de seguir." },
+      { t: "tabla", cab: ["Tabla", "Filas", "Que guarda"], filas: [
+        ["sucursales", "6", "nombre, ciudad y fecha de apertura"],
+        ["empleados", "18", "nombre, puesto, salario y su sucursal"],
+        ["productos", "24", "sku, nombre, categoria, precio y stock"],
+        ["ventas", "96", "folio, producto, empleado, cantidad y total"]
+      ]},
+      { t: "codigo", sql: "SELECT e.nombre,\n       e.puesto,\n       e.salario\n  FROM empleados e\n ORDER BY e.salario DESC\n LIMIT 5;" },
+      { t: "prueba", pide: "Muestra el nombre y la ciudad de las sucursales, ordenadas por ciudad.",
+        sol: "SELECT s.nombre, s.ciudad FROM sucursales s ORDER BY s.ciudad;",
+        pista: "Dos columnas de la tabla sucursales y un ORDER BY por ciudad." }
     ]}
   ]
 },
@@ -87,6 +107,26 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Cuenta los productos de la categoria 'Herramienta' que cuestan mas de 500. Llama a la columna n.",
         sol: "SELECT COUNT(*) AS n FROM productos p WHERE p.categoria = 'Herramienta' AND p.precio > 500;",
         pista: "Dos condiciones unidas con AND, y COUNT(*) con su alias." }
+    ]},
+    { titulo: "Negar una condicion", bloques: [
+      { t: "texto", txt: "NOT invierte una condicion, y los operadores tienen su version negada." },
+      { t: "tabla", cab: ["Afirmas", "Niegas"], filas: [
+        ["precio > 100", "precio <= 100"],
+        ["categoria = 'Pintura'", "categoria <> 'Pintura'"],
+        ["precio BETWEEN 100 AND 500", "precio NOT BETWEEN 100 AND 500"],
+        ["nombre LIKE 'T%'", "nombre NOT LIKE 'T%'"]
+      ]},
+      { t: "codigo", sql: "SELECT p.sku,\n       p.categoria\n  FROM productos p\n WHERE p.categoria <> 'Pintura'\n ORDER BY p.sku\n LIMIT 8;" },
+      { t: "nota", tono: "ojo", txt: "Cuidado: si la columna tiene NULL, ni la condicion ni su negacion lo incluyen. El NULL se queda fuera de las dos." }
+    ]},
+    { titulo: "Fechas: tambien se comparan", bloques: [
+      { t: "texto", txt: "Una fecha se compara como un numero: mayor es mas reciente. Se escribe con DATE y el formato aaaa-mm-dd." },
+      { t: "codigo", sql: "SELECT s.nombre,\n       s.fecha_apertura\n  FROM sucursales s\n WHERE s.fecha_apertura >= DATE '2021-01-01'\n ORDER BY s.fecha_apertura;" },
+      { t: "texto", txt: "Y EXTRACT saca una parte de la fecha, por ejemplo el anio." },
+      { t: "codigo", sql: "SELECT EXTRACT(YEAR FROM v.fecha) AS anio,\n       COUNT(*)                   AS ventas\n  FROM ventas v\n GROUP BY EXTRACT(YEAR FROM v.fecha)\n ORDER BY anio;" },
+      { t: "prueba", pide: "Muestra el folio y la fecha de las ventas del anio 2026, ordenadas por fecha. Limita a 5.",
+        sol: "SELECT v.folio, v.fecha FROM ventas v WHERE EXTRACT(YEAR FROM v.fecha) = 2026 ORDER BY v.fecha LIMIT 5;",
+        pista: "EXTRACT(YEAR FROM v.fecha) devuelve el anio; comparalo con 2026 en el WHERE." }
     ]}
   ]
 },
@@ -116,6 +156,19 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Muestra cada categoria con su precio promedio redondeado a dos decimales (columna prom), solo de las categorias cuyo promedio pase de 300. Ordena por prom descendente.",
         sol: "SELECT p.categoria, ROUND(AVG(p.precio),2) AS prom FROM productos p GROUP BY p.categoria HAVING AVG(p.precio) > 300 ORDER BY prom DESC;",
         pista: "GROUP BY por categoria, el promedio en el SELECT con ROUND, y la condicion del promedio en HAVING." }
+    ]},
+    { titulo: "COUNT(*) contra COUNT(columna)", bloques: [
+      { t: "texto", txt: "Parecen lo mismo y no lo son. El asterisco cuenta filas; una columna cuenta solo sus valores no nulos." },
+      { t: "codigo", sql: "SELECT COUNT(*)              AS filas,\n       COUNT(p.descripcion) AS con_descripcion\n  FROM productos p;", explica: "La diferencia entre los dos numeros son los productos sin descripcion." },
+      { t: "nota", tono: "regla", txt: "Esta distincion va a decidir si un reporte con LEFT JOIN sale bien o sale mal. Guardala." }
+    ]},
+    { titulo: "Ordenar por lo que calculaste", bloques: [
+      { t: "texto", txt: "Al alias del SELECT se le puede pedir el orden. Es mas legible que repetir toda la expresion." },
+      { t: "codigo", sql: "SELECT p.categoria,\n       SUM(p.precio * p.stock) AS valor\n  FROM productos p\n GROUP BY p.categoria\n ORDER BY valor DESC;" },
+      { t: "nota", tono: "dato", txt: "En PostgreSQL el ORDER BY si acepta el alias, porque se evalua despues del SELECT. En el WHERE no funciona: ahi el alias todavia no existe." },
+      { t: "prueba", pide: "Por cada puesto muestra cuantos empleados hay (columna n), solo de los puestos con mas de dos. Ordena por n descendente.",
+        sol: "SELECT e.puesto, COUNT(*) AS n FROM empleados e GROUP BY e.puesto HAVING COUNT(*) > 2 ORDER BY n DESC;",
+        pista: "GROUP BY por puesto, el filtro sobre el conteo va en HAVING, y el ORDER BY puede usar el alias n." }
     ]}
   ]
 },
@@ -150,6 +203,18 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Muestra el nombre de cada producto y cuantas ventas tiene (columna ventas), incluyendo los que nunca se vendieron. Ordena por ventas ascendente y limita a 5.",
         sol: "SELECT p.nombre, COUNT(v.id) AS ventas FROM productos p LEFT JOIN ventas v ON v.producto_id = p.id GROUP BY p.id, p.nombre ORDER BY ventas, p.id LIMIT 5;",
         pista: "LEFT JOIN desde productos, cuenta una columna de ventas, agrupa por producto." }
+    ]},
+    { titulo: "Unir tres tablas", bloques: [
+      { t: "texto", txt: "Un JOIN se encadena con el siguiente. Cada ON conecta un par de tablas." },
+      { t: "codigo", sql: "SELECT v.folio,\n       p.nombre AS producto,\n       e.nombre AS vendedor\n  FROM ventas    v\n  JOIN productos p ON p.id = v.producto_id\n  JOIN empleados e ON e.id = v.empleado_id\n ORDER BY v.id\n LIMIT 8;" },
+      { t: "nota", tono: "dato", txt: "El orden en que escribes los JOIN no cambia el resultado; el motor decide como ejecutarlos. Lo que si cambia todo es el ON." }
+    ]},
+    { titulo: "Agrupar despues de unir", bloques: [
+      { t: "texto", txt: "El patron mas comun de reporte: unir para traer el nombre, agrupar para resumir." },
+      { t: "codigo", sql: "SELECT s.nombre       AS sucursal,\n       COUNT(v.id)    AS ventas,\n       SUM(v.total)   AS importe\n  FROM sucursales s\n  JOIN empleados  e ON e.sucursal_id = s.id\n  JOIN ventas     v ON v.empleado_id = e.id\n GROUP BY s.nombre\n ORDER BY importe DESC;" },
+      { t: "prueba", pide: "Muestra el nombre del empleado y cuantas ventas hizo (columna ventas), de mayor a menor. Limita a 5.",
+        sol: "SELECT e.nombre, COUNT(v.id) AS ventas FROM empleados e JOIN ventas v ON v.empleado_id = e.id GROUP BY e.nombre ORDER BY ventas DESC LIMIT 5;",
+        pista: "JOIN entre empleados y ventas, GROUP BY por el nombre y COUNT de las ventas." }
     ]}
   ]
 },
@@ -184,6 +249,19 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Clasifica los empleados: 20000 o mas es 'Alto', el resto 'Normal'. Muestra nombre y la columna rango. Ordena por salario descendente y limita a 5.",
         sol: "SELECT e.nombre, CASE WHEN e.salario >= 20000 THEN 'Alto' ELSE 'Normal' END AS rango FROM empleados e ORDER BY e.salario DESC LIMIT 5;",
         pista: "Un CASE con un solo WHEN y un ELSE, con su alias AS rango." }
+    ]},
+    { titulo: "COALESCE: un plan B para el NULL", bloques: [
+      { t: "texto", txt: "COALESCE devuelve el primer valor que no sea nulo. Sirve para que un reporte no muestre huecos." },
+      { t: "codigo", sql: "SELECT p.sku,\n       COALESCE(p.descripcion, 'Sin descripcion') AS descripcion\n  FROM productos p\n ORDER BY p.id\n LIMIT 8;" },
+      { t: "nota", tono: "regla", txt: "Un SUM sobre un conjunto vacio devuelve NULL, no cero. Por eso los reportes de totales casi siempre llevan COALESCE(SUM(x), 0)." }
+    ]},
+    { titulo: "Subconsulta en el SELECT", bloques: [
+      { t: "texto", txt: "Una subconsulta tambien puede ir entre las columnas, y se evalua una vez por fila." },
+      { t: "codigo", sql: "SELECT e.nombre,\n       (SELECT COUNT(*)\n          FROM ventas v\n         WHERE v.empleado_id = e.id) AS ventas\n  FROM empleados e\n ORDER BY ventas DESC\n LIMIT 6;", explica: "Para cada empleado, cuenta sus ventas. Es lo mismo que un LEFT JOIN con GROUP BY, escrito de otra forma." },
+      { t: "nota", tono: "ojo", txt: "Con tablas grandes esto puede ser lento: se ejecuta una vez por fila. Con un LEFT JOIN el motor suele resolverlo mejor." },
+      { t: "prueba", pide: "Muestra el nombre de la sucursal y cuantos empleados tiene (columna empleados), usando una subconsulta en el SELECT. Ordena por empleados descendente.",
+        sol: "SELECT s.nombre, (SELECT COUNT(*) FROM empleados e WHERE e.sucursal_id = s.id) AS empleados FROM sucursales s ORDER BY empleados DESC;",
+        pista: "La subconsulta va entre parentesis dentro del SELECT y se relaciona con s.id en su WHERE." }
     ]}
   ]
 },
@@ -215,6 +293,28 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Agrega a la tabla empleados una columna correo, de texto de hasta 100 caracteres.",
         sol: "ALTER TABLE empleados ADD COLUMN correo VARCHAR(100);",
         pista: "ALTER TABLE, la accion ADD COLUMN, el nombre y el tipo VARCHAR con la longitud." }
+    ]},
+    { titulo: "Quitar y renombrar", bloques: [
+      { t: "texto", txt: "Ademas de agregar, ALTER puede quitar una columna o cambiarle el nombre." },
+      { t: "tabla", cab: ["Quieres", "Escribes", "Reversible"], filas: [
+        ["agregar", "ADD COLUMN x TIPO", "si, con DROP"],
+        ["renombrar", "RENAME COLUMN vieja TO nueva", "si"],
+        ["eliminar", "DROP COLUMN x", "NO: los datos se van"]
+      ]},
+      { t: "codigo", sql: "ALTER TABLE productos\n  RENAME COLUMN stock TO existencias;" },
+      { t: "nota", tono: "ojo", txt: "DROP COLUMN no pide confirmacion y no hay deshacer. En produccion se hace en dos pasos: primero se deja de usar, semanas despues se elimina." }
+    ]},
+    { titulo: "Tipos: elegir bien desde el principio", bloques: [
+      { t: "tabla", cab: ["Para", "Usa", "Por que"], filas: [
+        ["dinero", "NUMERIC(10,2)", "exacto; FLOAT redondea mal"],
+        ["texto corto", "VARCHAR(n)", "limita y documenta"],
+        ["enteros", "INTEGER o BIGINT", "BIGINT para ids"],
+        ["fechas", "DATE o TIMESTAMP", "permite comparar y extraer"]
+      ]},
+      { t: "nota", tono: "regla", txt: "Nunca guardes dinero en FLOAT. Un precio de 0.1 mas 0.2 no da 0.3 en binario, y ese centavo aparece en el cierre de mes." },
+      { t: "prueba", pide: "Agrega a la tabla sucursales una columna presupuesto, numerica con dos decimales, que arranque en 0 y no admita nulos.",
+        sol: "ALTER TABLE sucursales ADD COLUMN presupuesto NUMERIC(12,2) DEFAULT 0 NOT NULL;",
+        pista: "NUMERIC con precision y escala, mas DEFAULT y NOT NULL en la misma sentencia." }
     ]}
   ]
 },
@@ -243,6 +343,24 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Sube 200 pesos el salario de los empleados de la sucursal 2.",
         sol: "UPDATE empleados e SET salario = e.salario + 200 WHERE e.sucursal_id = 2;",
         pista: "El valor nuevo se calcula desde el actual, y el filtro es por sucursal_id." }
+    ]},
+    { titulo: "UPDATE con CASE: varios valores de una vez", bloques: [
+      { t: "texto", txt: "Cuando el valor nuevo depende de cada fila, CASE resuelve todo en una sola pasada." },
+      { t: "codigo", sql: "UPDATE productos p\n   SET precio = CASE\n                  WHEN p.stock = 0   THEN ROUND(p.precio * 0.90, 2)\n                  WHEN p.stock > 100 THEN ROUND(p.precio * 0.95, 2)\n                  ELSE                    p.precio\n                END;", explica: "Rebaja distinta segun el stock, sin tocar a los demas." },
+      { t: "nota", tono: "regla", txt: "El ELSE que devuelve la columna sin cambios es importante: sin el, las filas que no cumplen ninguna condicion quedarian en NULL." }
+    ]},
+    { titulo: "DELETE y por que da mas miedo", bloques: [
+      { t: "texto", txt: "DELETE borra filas enteras. Mismo esquema que UPDATE: sin WHERE, se lleva la tabla completa." },
+      { t: "codigo", sql: "SELECT COUNT(*) AS van_a_morir\n  FROM ventas v\n WHERE v.total < 100;", explica: "El SELECT de reconocimiento. Siempre antes." },
+      { t: "tabla", cab: ["Sentencia", "Que hace", "Se puede revertir"], filas: [
+        ["DELETE FROM t WHERE ...", "borra las filas que cumplen", "dentro de una transaccion, si"],
+        ["DELETE FROM t", "borra todas las filas", "dentro de una transaccion, si"],
+        ["TRUNCATE t", "vacia la tabla, mas rapido", "no siempre; no dispara triggers"]
+      ]},
+      { t: "nota", tono: "ojo", txt: "Si otra tabla apunta a la fila que borras con una llave foranea, el motor te detiene. Eso no es un obstaculo: es la base protegiendose." },
+      { t: "prueba", pide: "Sube el salario 1000 a los empleados que ganan menos de 12000.",
+        sol: "UPDATE empleados e SET salario = e.salario + 1000 WHERE e.salario < 12000;",
+        pista: "El valor nuevo se calcula desde el actual y el filtro compara el salario." }
     ]}
   ]
 },
@@ -276,6 +394,21 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Practica el paso 1 de una migracion: agrega a la tabla ventas una columna revisada, numerica entera, que nunca sea nula y arranque en 0.",
         sol: "ALTER TABLE ventas ADD COLUMN revisada INTEGER DEFAULT 0 NOT NULL;",
         pista: "ADD COLUMN con tipo INTEGER, un DEFAULT que de valor a las 96 filas que ya existen, y NOT NULL." }
+    ]},
+    { titulo: "Transacciones: todo o nada", bloques: [
+      { t: "texto", txt: "Una transaccion agrupa varias sentencias en una sola unidad: o se aplican todas, o ninguna." },
+      { t: "tabla", cab: ["Palabra", "Que hace"], filas: [
+        ["BEGIN", "abre la transaccion"],
+        ["COMMIT", "confirma todos los cambios"],
+        ["ROLLBACK", "deshace todo lo hecho desde el BEGIN"]
+      ]},
+      { t: "texto", txt: "En esta consola cada desafio tiene su propia copia de la base y el boton Restaurar hace las veces de ROLLBACK. Pero en produccion, una migracion de varios pasos va dentro de una transaccion." },
+      { t: "nota", tono: "regla", txt: "La regla practica: si dos sentencias tienen que ser verdad al mismo tiempo, van en la misma transaccion. Un traspaso entre dos cuentas es el ejemplo clasico." }
+    ]},
+    { titulo: "Una migracion que se puede repetir", bloques: [
+      { t: "texto", txt: "Una sentencia idempotente se puede correr dos veces sin cambiar nada la segunda. Es lo que permite reintentar una migracion sin miedo." },
+      { t: "codigo", sql: "SELECT COUNT(*) AS pendientes\n  FROM empleados e\n WHERE e.activo = 1\n   AND NOT EXISTS (SELECT 1 FROM ventas v WHERE v.empleado_id = e.id);", explica: "Si despues del UPDATE este numero es 0, la migracion ya se aplico completa." },
+      { t: "nota", tono: "dato", txt: "El truco es siempre el mismo: agregar al WHERE la condicion de que la fila todavia no este en el estado final." }
     ]}
   ]
 },
@@ -315,10 +448,22 @@ export const LECCIONES: Leccion[] = [
       { t: "prueba", pide: "Muestra sku, precio y el lugar por precio descendente dentro de cada categoria (columna lugar). Ordena por categoria y lugar, limita a 6.",
         sol: "SELECT p.sku, p.precio, ROW_NUMBER() OVER (PARTITION BY p.categoria ORDER BY p.precio DESC) AS lugar FROM productos p ORDER BY p.categoria, lugar LIMIT 6;",
         pista: "ROW_NUMBER() con PARTITION BY la categoria y ORDER BY el precio, todo dentro del OVER." }
+    ]},
+    { titulo: "Comparar con la fila vecina", bloques: [
+      { t: "texto", txt: "Con un acumulado y el total de la particion se puede calcular cuanto aporta cada fila al grupo." },
+      { t: "codigo", sql: "SELECT e.nombre,\n       e.salario,\n       ROUND(100.0 * e.salario / SUM(e.salario) OVER (PARTITION BY e.sucursal_id), 1) AS pct_sucursal\n  FROM empleados e\n ORDER BY e.sucursal_id, pct_sucursal DESC;" },
+      { t: "nota", tono: "dato", txt: "El 100.0 con punto no es casualidad: obliga a division decimal. Con 100 entero, algunos motores truncan el resultado." }
+    ]},
+    { titulo: "Varios CTE encadenados", bloques: [
+      { t: "texto", txt: "Se pueden declarar varios CTE separados por coma, y cada uno puede usar los anteriores. Asi una consulta larga se lee como una receta." },
+      { t: "codigo", sql: "WITH por_empleado AS (\n  SELECT v.empleado_id,\n         SUM(v.total) AS importe\n    FROM ventas v\n   GROUP BY v.empleado_id\n),\ncon_nombre AS (\n  SELECT e.nombre,\n         pe.importe\n    FROM por_empleado pe\n    JOIN empleados    e ON e.id = pe.empleado_id\n)\nSELECT c.nombre,\n       c.importe\n  FROM con_nombre c\n ORDER BY c.importe DESC\n LIMIT 5;" },
+      { t: "nota", tono: "regla", txt: "Si una consulta tiene mas de dos subconsultas anidadas, casi siempre se lee mejor como CTE encadenados. El motor hace lo mismo; el humano no." },
+      { t: "prueba", pide: "Con un CTE llamado caros que traiga los productos de precio mayor a 500 (nombre, categoria, precio), muestra desde el CTE la categoria y cuantos productos caros tiene (columna n). Ordena por n descendente y luego por categoria.",
+        sol: "WITH caros AS (SELECT p.nombre, p.categoria, p.precio FROM productos p WHERE p.precio > 500) SELECT c.categoria, COUNT(*) AS n FROM caros c GROUP BY c.categoria ORDER BY n DESC, c.categoria;",
+        pista: "Primero el WITH con el filtro de precio, y afuera un GROUP BY por categoria contando las filas." }
     ]}
   ]
 },
-
 /* ============================ 10. EL VACIO ============================ */
 {
   reino: "vacio", titulo: "Destruccion controlada", xp: 130,
