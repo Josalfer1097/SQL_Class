@@ -377,3 +377,44 @@ table.res td.null{color:var(--faint);font-style:italic}table.res td.num{text-ali
 .xpgana.grande{font-family:var(--epico);font-size:34px;color:var(--warn);margin:8px 0}
 .lec-fin-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
 @media (max-width:980px){.lec-cuerpo{padding:22px 16px 60px}.leccion-card{grid-template-columns:34px 1fr}.lc-ir{display:none}}
+
+/* ---- aura y bruma del Susanoo ---- */
+.susanoo .halo{animation:susHalo 4.2s ease-in-out infinite alternate;transform-origin:100px 136px}
+.susanoo .halo2{animation:susHalo 3.1s ease-in-out infinite alternate-reverse;transform-origin:100px 136px}
+@keyframes susHalo{from{opacity:.08;transform:scale(.95)}to{transform:scale(1.07);opacity:.2}}
+.susanoo .guerrero{animation:susPulso 5s ease-in-out infinite alternate;transform-origin:100px 140px}
+@keyframes susPulso{from{opacity:.12}to{opacity:.3}}
+.susanoo .bruma{transform-origin:100px 250px}
+.susanoo .b1{animation:brumaA 7s ease-in-out infinite alternate}
+.susanoo .b2{animation:brumaB 5.5s ease-in-out infinite alternate}
+.susanoo .b3{animation:brumaA 9s ease-in-out infinite alternate-reverse}
+@keyframes brumaA{from{transform:scaleX(.92) translateX(-4px);opacity:.55}to{transform:scaleX(1.08) translateX(4px);opacity:.9}}
+@keyframes brumaB{from{transform:scaleX(1.1);opacity:.45}to{transform:scaleX(.9);opacity:.8}}
+.susanoo .brasa{animation:susBrasa 5s ease-in-out infinite;opacity:0}
+.susanoo .br1{animation-delay:.8s}.susanoo .br2{animation-delay:1.6s}.susanoo .br3{animation-delay:2.4s}
+.susanoo .br4{animation-delay:3.2s}.susanoo .br5{animation-delay:4s}
+@keyframes susBrasa{0%{transform:translateY(0);opacity:0}25%{opacity:.85}100%{transform:translateY(-120px) scale(.35);opacity:0}}
+
+/* ================= pantalla de carga ================= */
+.cargando{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  transition:opacity .45s var(--ease),transform .45s var(--ease)}
+.cargando.sale{opacity:0;transform:scale(1.04);pointer-events:none}
+.carga-centro{display:flex;flex-direction:column;align-items:center;gap:10px}
+.carga-sello{filter:drop-shadow(0 0 26px rgba(139,92,246,.45))}
+.carga-sello circle:nth-child(2){transition:stroke-dasharray .18s linear}
+.carga-runa{animation:runaGira 3.4s linear infinite;transform-origin:60px 60px}
+@keyframes runaGira{to{transform:rotate(360deg)}}
+.carga-titulo{font-family:var(--epico);font-size:30px;margin:12px 0 0;background:var(--iris);background-size:220%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 5s ease-in-out infinite alternate}
+.carga-frase{margin:0;font-family:var(--mono);font-size:12.5px;color:var(--faint);animation:fadein .35s var(--ease)}
+.carga-barra{width:220px;height:3px;background:var(--edge2);border-radius:2px;overflow:hidden;margin-top:6px}
+.carga-barra i{display:block;height:100%;background:var(--iris);background-size:200%;transition:width .18s linear}
+
+/* ================= aviso de guardado ================= */
+.aviso-guardado{position:fixed;right:16px;bottom:16px;z-index:150;font-family:var(--mono);font-size:11.5px;
+  padding:7px 13px;border-radius:999px;background:rgba(45,212,167,.12);color:var(--ok);
+  border:1px solid rgba(45,212,167,.35);opacity:0;transform:translateY(10px);pointer-events:none;
+  transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.aviso-guardado.on{opacity:1;transform:none}
+.aviso-guardado::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);margin-right:7px;vertical-align:1px}
+@media (prefers-reduced-motion:reduce){.carga-runa{animation:none}}

@@ -3,6 +3,7 @@ import { Avatar, Umbra } from "./Personajes";
 import { acciones, useJuego, personajeDefault, PIELES, CABELLOS, COLORES_CABELLO, COLORES_OJOS, COLORES_ROPA, COLORES_CAPA, ATUENDOS, CABEZAS, ROSTROS, SEXOS, CONJUNTOS, reinoDesbloqueado, nivelDesbloqueado, totalNiveles, type Personaje, type Conjunto } from "../game/store";
 import { REINOS, RANGOS, rangoDe, siguienteRango, porN, esJefe, UMBRA, frase } from "../game/mundo";
 import { leccionDe } from "../game/lecciones";
+import { Respaldo } from "./Sistema";
 
 /* ---------- burbuja de dialogo ---------- */
 export function Burbuja({ texto, quien = UMBRA.nombre, lado = "izq" }: { texto: string; quien?: string; lado?: "izq" | "der" }) {
@@ -210,6 +211,7 @@ function Swatch({ c, on, onClick }: { c: string; on: boolean; onClick: () => voi
    ============================================================ */
 export function Mapa() {
   const j = useJuego();
+  const [respaldo, setRespaldo] = useState(false);
   const p = j.progreso;
   const rango = rangoDe(p.xp), sig = siguienteRango(p.xp);
   const pct = sig ? Math.round(((p.xp - rango.min) / (sig.min - rango.min)) * 100) : 100;
@@ -235,6 +237,7 @@ export function Mapa() {
           <span><b>{p.resueltos.length}</b> / {totalNiveles()} desafios</span>
           <span><b>{p.reinosConquistados.length}</b> / {REINOS.length} reinos</span>
         </div>
+        <button className="btn gh peq" onClick={() => setRespaldo(true)} title="Descargar o restaurar tu avance">Respaldo</button>
         <button className="btn gh peq" onClick={() => { if (confirm("Se borra todo el progreso y el personaje. Seguro?")) acciones.reiniciarTodo(); }}>Reiniciar</button>
       </header>
 
@@ -309,6 +312,7 @@ export function Mapa() {
           </div>
         </section>
       </div>
+      {respaldo && <Respaldo onCerrar={() => setRespaldo(false)} />}
     </div>
   );
 }

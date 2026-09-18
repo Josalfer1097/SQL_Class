@@ -35,8 +35,20 @@ export function Avatar({ p, size = 220, animado = true }: { p: Personaje; size?:
           <stop offset="45%" stopColor="#8F97A6" />
           <stop offset="100%" stopColor="#5A6170" />
         </linearGradient>
+        <linearGradient id={id + "esp"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6B4D8F" />
+          <stop offset="55%" stopColor="#3E2A5C" />
+          <stop offset="100%" stopColor="#1E142E" />
+        </linearGradient>
+        <radialGradient id={id + "su"} cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stopColor="#B794F6" stopOpacity=".55" />
+          <stop offset="55%" stopColor="#5B2E9B" stopOpacity=".3" />
+          <stop offset="100%" stopColor="#0A0710" stopOpacity="0" />
+        </radialGradient>
+        <filter id={id + "bruma"}><feGaussianBlur stdDeviation="7" /></filter>
       </defs>
 
+      {p.atuendo === "susanoo" && <AuraSusanoo det={p.detalle} />}
       <ellipse cx="100" cy="150" rx="86" ry="110" fill={`url(#${id}g)`} />
       <ellipse cx="100" cy="257" rx={44 * w} ry="7" fill="#000" opacity=".38" />
 
@@ -59,7 +71,7 @@ export function Avatar({ p, size = 220, animado = true }: { p: Personaje; size?:
         <CabelloTrasero estilo={p.cabello} color={p.colorCabello} oculto={tapaPelo} />
 
         <Atuendo tipo={p.atuendo} w={w} hombro={hombro} cintura={cintura} ropa={p.ropa} osc={osc} det={det} detOsc={detOsc}
-          grad={`url(#${id}t)`} metal={`url(#${id}m)`} />
+          grad={`url(#${id}t)`} metal={`url(#${id}m)`} esp={`url(#${id}esp)`} />
 
         <Brazos w={w} hombro={hombro} ropa={p.ropa} osc={osc} piel={p.piel} det={det} brazaletes={p.brazaletes} metal={`url(#${id}m)`} atuendo={p.atuendo} />
 
@@ -86,6 +98,33 @@ export function Avatar({ p, size = 220, animado = true }: { p: Personaje; size?:
         <Rostro tipo={p.rostro} det={det} ropa={p.ropa} />
       </g>
     </svg>
+  );
+}
+
+/* ---------- aura y bruma del Susanoo, detras de todo ---------- */
+function AuraSusanoo({ det }: { det: string }) {
+  return (
+    <g className="susanoo" aria-hidden="true">
+      {/* bruma negra que se arrastra por la base */}
+      <ellipse className="bruma b1" cx="100" cy="250" rx="82" ry="26" fill="#05030A" opacity=".85" />
+      <ellipse className="bruma b2" cx="100" cy="256" rx="62" ry="18" fill="#1A0E2E" opacity=".7" />
+      <ellipse className="bruma b3" cx="100" cy="244" rx="94" ry="20" fill="#0A0514" opacity=".6" />
+      {/* halo espectral */}
+      <ellipse className="halo" cx="100" cy="136" rx="88" ry="118" fill={det} opacity=".13" />
+      <ellipse className="halo2" cx="100" cy="136" rx="72" ry="102" fill={det} opacity=".1" />
+      {/* silueta de guerrero que envuelve: hombros y brazos espectrales */}
+      <path className="guerrero" d="M 100 34 C 62 34 42 72 38 130 C 35 176 40 216 48 244 L 62 240
+        C 54 210 50 174 53 134 C 57 84 74 54 100 54 C 126 54 143 84 147 134
+        C 150 174 146 210 138 240 L 152 244 C 160 216 165 176 162 130 C 158 72 138 34 100 34 Z"
+        fill={det} opacity=".2" />
+      {/* cuernos espectrales */}
+      <path className="guerrero" d="M 58 62 Q 38 36 42 8 Q 60 30 70 58 Z" fill={det} opacity=".22" />
+      <path className="guerrero" d="M 142 62 Q 162 36 158 8 Q 140 30 130 58 Z" fill={det} opacity=".22" />
+      {/* brasas que flotan */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <circle key={i} className={"brasa br" + i} cx={52 + i * 19} cy={230 - (i % 3) * 34} r={1.4 + (i % 2)} fill={i % 2 ? "#B794F6" : "#FF2244"} />
+      ))}
+    </g>
   );
 }
 
@@ -137,6 +176,64 @@ function Cabeza({ tipo, ropa, osc, det, detOsc, w, metal, piel }:
         </g>
       );
     }
+    /* ---- capucha de sigilo: ajustada, deja los ojos ---- */
+    case "capuchaSigilo": return (
+      <g>
+        <path d="M 68 66 Q 68 26 100 24 Q 132 26 132 66 Q 132 84 124 92 L 76 92 Q 68 84 68 66 Z" fill={ropa} />
+        <path d="M 74 62 Q 100 52 126 62 L 126 76 Q 100 66 74 76 Z" fill="#0A0710" opacity=".55" />
+        <path d="M 68 66 Q 68 26 100 24 Q 132 26 132 66" stroke={det} strokeWidth="2" fill="none" opacity=".7" />
+        <path d={`M 76 90 Q 100 98 124 90 L ${100 + 30 * w} 118 Q 100 110 ${100 - 30 * w} 118 Z`} fill={osc} />
+        <path d="M 124 84 q 16 12 10 30 q -8 -10 -14 -18 Z" fill={osc} />
+      </g>
+    );
+
+    /* ---- yelmo espectral con cuernos ---- */
+    case "yelmoEspectro": return (
+      <g>
+        <path d="M 62 60 Q 44 30 48 6 Q 66 26 76 54 Z" fill="#2E1E48" />
+        <path d="M 138 60 Q 156 30 152 6 Q 134 26 124 54 Z" fill="#2E1E48" />
+        <path d="M 62 60 Q 50 36 52 16" stroke={det} strokeWidth="1.6" fill="none" opacity=".6" />
+        <path d="M 138 60 Q 150 36 148 16" stroke={det} strokeWidth="1.6" fill="none" opacity=".6" />
+        <path d="M 66 62 Q 66 24 100 22 Q 134 24 134 62 L 134 92 Q 100 100 66 92 Z" fill="#3E2A5C" />
+        <path d="M 72 58 Q 100 48 128 58 L 128 74 Q 100 64 72 74 Z" fill="#0A0710" opacity=".8" />
+        <ellipse cx="86" cy="68" rx="6" ry="4" fill="#FF2244" />
+        <ellipse cx="114" cy="68" rx="6" ry="4" fill="#FF2244" />
+        <path d="M 100 22 L 100 58" stroke="#241A38" strokeWidth="2.4" />
+        {[0, 1, 2].map((i) => <path key={i} d={`M 78 ${80 + i * 6} L 122 ${80 + i * 6}`} stroke="#241A38" strokeWidth="2.4" />)}
+      </g>
+    );
+
+    /* ---- tocado ornamental con plumas ---- */
+    case "tocadoOrnamental": return (
+      <g>
+        {[-1, 0, 1].map((k) => (
+          <g key={k}>
+            <path d={`M ${100 + k * 17} 34 q ${k * 5} -24 ${k * 2} -30 q ${-k * 9} 10 ${-k * 4} 30 Z`} fill="#E8E3D6" />
+            <path d={`M ${100 + k * 17} 34 q ${k * 4} -18 ${k * 2} -26`} stroke={det} strokeWidth="1.2" fill="none" />
+          </g>
+        ))}
+        <path d="M 70 58 Q 70 28 100 26 Q 130 28 130 58 Q 130 74 122 82 L 78 82 Q 70 74 70 58 Z" fill={ropa} />
+        <path d="M 70 52 Q 100 40 130 52" stroke={det} strokeWidth="4" fill="none" />
+        <path d="M 74 64 Q 100 56 126 64" stroke={det} strokeWidth="2" fill="none" opacity=".8" />
+        <circle cx="100" cy="44" r="5" fill={det} />
+        <circle cx="100" cy="44" r="2" fill={ropa} />
+        <path d="M 72 78 q -10 16 -6 32 q 8 -10 14 -22 Z" fill={det} opacity=".7" />
+        <path d="M 128 78 q 10 16 6 32 q -8 -10 -14 -22 Z" fill={det} opacity=".7" />
+      </g>
+    );
+
+    /* ---- corona espectral del Susanoo ---- */
+    case "coronaSusanoo": return (
+      <g>
+        <path d="M 64 54 Q 46 26 50 2 Q 68 24 78 50 Z" fill={det} opacity=".45" />
+        <path d="M 136 54 Q 154 26 150 2 Q 132 24 122 50 Z" fill={det} opacity=".45" />
+        <path d="M 72 50 Q 100 34 128 50" stroke={det} strokeWidth="4" fill="none" opacity=".85" />
+        <path d="M 78 42 L 82 20 L 90 38 L 100 14 L 110 38 L 118 20 L 122 42 Z" fill={det} opacity=".55" />
+        <circle cx="100" cy="30" r="4" fill="#FFF" opacity=".85" />
+        <path d="M 70 62 Q 100 54 130 62" stroke={det} strokeWidth="2" fill="none" opacity=".5" />
+      </g>
+    );
+
     case "yelmo": return (
       <g>
         <path d="M 68 66 Q 68 26 100 24 Q 132 26 132 66 L 132 78 L 68 78 Z" fill={metal} />
@@ -262,14 +359,98 @@ function Rostro({ tipo, det, ropa }: { tipo: string; det: string; ropa: string }
 }
 
 /* ---------- atuendos ---------- */
-function Atuendo({ tipo, w, hombro, cintura, ropa, osc, det, detOsc, grad, metal }:
-  { tipo: string; w: number; hombro: number; cintura: number; ropa: string; osc: string; det: string; detOsc: string; grad: string; metal: string }) {
+function Atuendo({ tipo, w, hombro, cintura, ropa, osc, det, detOsc, grad, metal, esp }:
+  { tipo: string; w: number; hombro: number; cintura: number; ropa: string; osc: string; det: string; detOsc: string; grad: string; metal: string; esp: string }) {
   const HL = 100 - 40 * w * hombro, HR = 100 + 40 * w * hombro;
   const CL = 100 - 36 * w * cintura, CR = 100 + 36 * w * cintura;
   const torso = `M ${HL} 114 Q 100 104 ${HR} 114 L ${CR} 196 Q 100 204 ${CL} 196 Z`;
   const L = (k: number) => 100 - k * w, R = (k: number) => 100 + k * w;
 
   switch (tipo) {
+    /* ---- SIGILO: traje ajustado con arnes de correas ---- */
+    case "sigilo": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(30)} 118 Q 100 110 ${R(30)} 118 L ${R(26)} 168 Q 100 176 ${L(26)} 168 Z`} fill={osc} />
+        {[0, 1, 2, 3].map((i) => (
+          <path key={i} d={`M ${L(26)} ${126 + i * 12} Q 100 ${131 + i * 12} ${R(26)} ${126 + i * 12}`} stroke={detOsc} strokeWidth="1.6" fill="none" opacity=".7" />
+        ))}
+        <path d={`M ${L(34)} 122 L ${R(26)} 170`} stroke={det} strokeWidth="5" strokeLinecap="round" />
+        <path d={`M ${R(34)} 122 L ${L(26)} 170`} stroke={det} strokeWidth="5" strokeLinecap="round" />
+        <circle cx="100" cy="146" r="5.5" fill={detOsc} /><circle cx="100" cy="146" r="2" fill="#7CD5FF" />
+        <rect x={L(37)} y="166" width={74 * w} height="9" rx="3" fill={detOsc} />
+        <rect x={L(20)} y="175" width={13 * w} height="15" rx="3" fill={detOsc} />
+        <rect x={R(8)} y="175" width={13 * w} height="15" rx="3" fill={detOsc} />
+        <path d={`M ${R(30)} 124 q ${10 * w} 22 ${2 * w} 44`} stroke={detOsc} strokeWidth="4" fill="none" strokeLinecap="round" />
+      </g>
+    );
+
+    /* ---- ESPECTRO: placas en espiral y grietas encendidas ---- */
+    case "espectro": return (
+      <g>
+        <path d={torso} fill={esp} />
+        <path d={`M ${L(34)} 118 Q 100 108 ${R(34)} 118 L ${R(29)} 166 Q 100 176 ${L(29)} 166 Z`} fill="#4A3468" />
+        {/* espirales grabadas */}
+        <path d={`M ${L(18)} 140 a 7 7 0 1 1 8 6 a 4 4 0 1 1 -4 -5`} stroke={det} strokeWidth="1.8" fill="none" opacity=".9" />
+        <path d={`M ${R(18)} 140 a 7 7 0 1 0 -8 6 a 4 4 0 1 0 4 -5`} stroke={det} strokeWidth="1.8" fill="none" opacity=".9" />
+        <path d={`M ${L(30)} 120 Q 100 132 ${R(30)} 120`} stroke={det} strokeWidth="2.4" fill="none" />
+        <path d="M 100 112 L 100 168" stroke="#241A38" strokeWidth="2.6" />
+        {/* grietas rojas */}
+        <path d={`M ${L(10)} 124 L ${L(4)} 146 L ${L(9)} 150`} stroke="#FF2244" strokeWidth="1.6" fill="none" opacity=".85" />
+        <path d={`M ${R(10)} 128 L ${R(4)} 150`} stroke="#FF2244" strokeWidth="1.4" fill="none" opacity=".7" />
+        <rect x={L(37)} y="166" width={74 * w} height="11" rx="3" fill="#241A38" />
+        <circle cx="100" cy="171.5" r="4" fill="#FF2244" opacity=".9" />
+        {[0, 1, 2, 3].map((i) => (
+          <path key={i} d={`M ${L(34) + i * 17 * w} 178 h ${15 * w} l ${-2 * w} 26 h ${-11 * w} Z`} fill={i % 2 ? "#3E2A5C" : "#4A3468"} />
+        ))}
+      </g>
+    );
+
+    /* ---- ORNAMENTAL: peto grabado con oro ---- */
+    case "ornamental": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(34)} 118 Q 100 108 ${R(34)} 118 L ${R(28)} 164 Q 100 174 ${L(28)} 164 Z`} fill={osc} opacity=".55" />
+        {/* grabados en espiral dorada */}
+        {[0, 1].map((k) => (
+          <g key={k}>
+            <path d={`M ${k ? R(16) : L(16)} 134 a 6 6 0 1 ${k ? 0 : 1} ${k ? -7 : 7} 5 a 3.4 3.4 0 1 ${k ? 0 : 1} ${k ? 3.5 : -3.5} -4`} stroke={det} strokeWidth="1.7" fill="none" />
+            <path d={`M ${k ? R(22) : L(22)} 152 q ${k ? -8 : 8} 6 ${k ? -4 : 4} 14`} stroke={det} strokeWidth="1.5" fill="none" opacity=".8" />
+          </g>
+        ))}
+        <path d={`M ${L(34)} 120 Q 100 132 ${R(34)} 120`} stroke={det} strokeWidth="3" fill="none" />
+        <path d="M 100 112 L 100 166" stroke={det} strokeWidth="2" opacity=".7" />
+        <circle cx="100" cy="140" r="7.5" fill={det} />
+        <circle cx="100" cy="140" r="3.4" fill={osc} />
+        <rect x={L(37)} y="164" width={74 * w} height="10" rx="3" fill={det} />
+        {[0, 1, 2, 3, 4].map((i) => (
+          <path key={i} d={`M ${L(36) + i * 14.5 * w} 175 h ${13 * w} l ${-2 * w} 24 h ${-9 * w} Z`} fill={i % 2 ? osc : sombra(ropa, .84)} />
+        ))}
+        <path d={`M ${L(36)} 175 h ${72 * w}`} stroke={det} strokeWidth="1.6" />
+      </g>
+    );
+
+    /* ---- SUSANOO: armadura espectral translucida ---- */
+    case "susanoo": return (
+      <g>
+        <path d={torso} fill={grad} />
+        <path d={`M ${L(36)} 116 Q 100 106 ${R(36)} 116 L ${R(30)} 170 Q 100 180 ${L(30)} 170 Z`} fill={det} opacity=".22" />
+        <path d={`M ${L(36)} 116 Q 100 106 ${R(36)} 116`} stroke={det} strokeWidth="2.6" fill="none" opacity=".85" />
+        <path d={`M ${L(30)} 170 Q 100 180 ${R(30)} 170`} stroke={det} strokeWidth="2.2" fill="none" opacity=".7" />
+        {[0, 1, 2].map((i) => (
+          <path key={i} d={`M ${L(28)} ${130 + i * 15} Q 100 ${138 + i * 15} ${R(28)} ${130 + i * 15}`} stroke={det} strokeWidth="1.5" fill="none" opacity=".55" />
+        ))}
+        <path d="M 100 112 L 100 174" stroke={det} strokeWidth="1.8" opacity=".6" />
+        {/* magatamas */}
+        {[0, 1, 2].map((i) => (
+          <path key={i} d={`M ${L(14) + i * 14 * w} 150 a 4.5 4.5 0 1 1 4 -3 a 2.4 2.4 0 1 0 -2 2 Z`} fill={det} opacity=".9" />
+        ))}
+        <rect x={L(34)} y="172" width={68 * w} height="8" rx="3" fill={det} opacity=".45" />
+        <path d={`M ${L(28)} 182 L ${L(22)} 214 L ${L(8)} 188 Z`} fill={det} opacity=".2" />
+        <path d={`M ${R(28)} 182 L ${R(22)} 214 L ${R(8)} 188 Z`} fill={det} opacity=".2" />
+      </g>
+    );
+
     case "asesino": return (
       <g>
         <path d={torso} fill={grad} />

@@ -8,10 +8,12 @@ export type Sexo = "f" | "m" | "x";                     // femenino, masculino, 
 export type Complexion = "esbelta" | "media" | "ancha";
 export type Atuendo =
   | "asesino" | "sombra" | "explorador" | "erudito" | "arcano" | "guardia" | "tunica"
-  | "parca" | "diablo" | "placas" | "real" | "nomada";
+  | "parca" | "diablo" | "placas" | "real" | "nomada"
+  | "sigilo" | "espectro" | "ornamental" | "susanoo";
 export type Cabeza =
   | "ninguna" | "capucha" | "capuchaPico" | "yelmo" | "celada" | "corona" | "diadema"
-  | "sombrero" | "turbante" | "cuernos" | "calavera";
+  | "sombrero" | "turbante" | "cuernos" | "calavera"
+  | "capuchaSigilo" | "yelmoEspectro" | "tocadoOrnamental" | "coronaSusanoo";
 export type Rostro = "ninguno" | "lentes" | "monoculo" | "antifaz" | "mascaraMedia" | "respirador" | "velo";
 
 export interface Personaje {
@@ -46,6 +48,10 @@ export const SEXOS: { id: Sexo; nombre: string }[] = [
 ];
 
 export const ATUENDOS: { id: Atuendo; nombre: string; nota: string }[] = [
+  { id: "sigilo",     nombre: "Sigilo",     nota: "Traje ajustado gris oscuro, mascara que cubre media cara y arnes de correas." },
+  { id: "espectro",   nombre: "Espectro",   nota: "Armadura blindada con cuernos, placas en espiral y ojos encendidos." },
+  { id: "ornamental", nombre: "Ornamental", nota: "Peto grabado, hombreras de placa y plumas en el tocado." },
+  { id: "susanoo",    nombre: "Susanoo",    nota: "Aura espectral, bruma negra y una silueta de guerrero que te envuelve." },
   { id: "asesino",    nombre: "Asesino",    nota: "Tunica cruzada, fajin con hebilla y hoja oculta en el antebrazo." },
   { id: "sombra",     nombre: "Sombra",     nota: "Peto acolchado, correas en X, bufanda y dagas al cinto." },
   { id: "parca",      nombre: "Parca",      nota: "Sudario deshilachado y costillas grabadas. El uniforme de Umbra." },
@@ -64,7 +70,9 @@ export const CABEZAS: { id: Cabeza; nombre: string }[] = [
   { id: "ninguna", nombre: "Nada" }, { id: "capucha", nombre: "Capucha" }, { id: "capuchaPico", nombre: "Capucha en pico" },
   { id: "yelmo", nombre: "Yelmo" }, { id: "celada", nombre: "Celada" }, { id: "corona", nombre: "Corona" },
   { id: "diadema", nombre: "Diadema" }, { id: "sombrero", nombre: "Sombrero" }, { id: "turbante", nombre: "Turbante" },
-  { id: "cuernos", nombre: "Cuernos" }, { id: "calavera", nombre: "Calavera" }
+  { id: "cuernos", nombre: "Cuernos" }, { id: "calavera", nombre: "Calavera" },
+  { id: "capuchaSigilo", nombre: "Capucha de sigilo" }, { id: "yelmoEspectro", nombre: "Yelmo espectral" },
+  { id: "tocadoOrnamental", nombre: "Tocado de plumas" }, { id: "coronaSusanoo", nombre: "Corona espectral" }
 ];
 
 export const ROSTROS: { id: Rostro; nombre: string }[] = [
@@ -94,6 +102,14 @@ export const CONJUNTOS: Conjunto[] = [
     p: { atuendo: "explorador", cabeza: "sombrero", rostro: "ninguno", ropa: "#B3520B", detalle: "#3A2418", capa: "ninguna", hombrera: false, brazaletes: true } },
   { id: "duna", nombre: "Hijo de la Duna", nota: "Tela ligera y velo contra la arena.",
     p: { atuendo: "nomada", cabeza: "turbante", rostro: "velo", ropa: "#C9C3B6", detalle: "#8B6B2B", capa: "#8B6B2B", hombrera: false, brazaletes: true } },
+  { id: "nocturnoSigilo", nombre: "Sombra Nocturna", nota: "Traje ajustado y media mascara. Nadie te ve venir.",
+    p: { atuendo: "sigilo", cabeza: "capuchaSigilo", rostro: "mascaraMedia", ropa: "#3A3140", detalle: "#1B1220", capa: "ninguna", hombrera: false, brazaletes: true } },
+  { id: "espectral", nombre: "Blindaje Espectral", nota: "Cuernos, espirales y dos brasas donde deberia haber ojos.",
+    p: { atuendo: "espectro", cabeza: "yelmoEspectro", rostro: "ninguno", ropa: "#4A2C5E", detalle: "#9B7FBF", capa: "#2A1A3E", hombrera: true, brazaletes: true } },
+  { id: "ceremonial", nombre: "Guardia Ceremonial", nota: "Peto grabado, plumas y oro. Para cuando hay que impresionar.",
+    p: { atuendo: "ornamental", cabeza: "tocadoOrnamental", rostro: "ninguno", ropa: "#C9C3B6", detalle: "#D9A441", capa: "#1B3A5C", hombrera: true, brazaletes: true } },
+  { id: "susanooSet", nombre: "Manifestacion", nota: "El aura se vuelve visible. La bruma te sigue a donde vayas.",
+    p: { atuendo: "susanoo", cabeza: "coronaSusanoo", rostro: "ninguno", ropa: "#1B1028", detalle: "#8B5CF6", capa: "ninguna", hombrera: true, brazaletes: true } },
   { id: "corte", nombre: "Heraldo de la Corte", nota: "Galones dorados y corona. Por si hay que dar ordenes.",
     p: { atuendo: "real", cabeza: "corona", rostro: "ninguno", ropa: "#5B3FA8", detalle: "#D9A441", capa: "#5A1030", hombrera: true, brazaletes: false } }
 ];
@@ -162,9 +178,40 @@ function cargar(): Estado {
 let estado: Estado = cargar();
 const oyentes = new Set<() => void>();
 
+let guardadoEn = 0;
+const oyentesGuardado = new Set<(t: number) => void>();
+export function onGuardado(f: (t: number) => void) { oyentesGuardado.add(f); return () => oyentesGuardado.delete(f); }
+export function ultimoGuardado() { return guardadoEn; }
+
 function emitir() {
-  try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch { /* ignorar */ }
+  try {
+    localStorage.setItem(CLAVE, JSON.stringify(estado));
+    guardadoEn = Date.now();
+    oyentesGuardado.forEach((f) => f(guardadoEn));
+  } catch { /* sin almacenamiento: se juega sin guardar */ }
   oyentes.forEach((f) => f());
+}
+
+/* ---------- exportar e importar progreso ---------- */
+export function exportarProgreso(): string {
+  return JSON.stringify({ v: 1, fecha: new Date().toISOString(), personaje: estado.personaje, progreso: estado.progreso }, null, 2);
+}
+export function importarProgreso(texto: string): { ok: boolean; msg: string } {
+  try {
+    const d = JSON.parse(texto);
+    if (!d || !d.progreso || typeof d.progreso.xp !== "number") return { ok: false, msg: "El archivo no tiene el formato esperado." };
+    estado = {
+      ...estado,
+      personaje: normalizar(d.personaje),
+      progreso: { ...progresoInicial(), ...d.progreso },
+      pantalla: d.personaje ? "mapa" : "intro",
+      nivelActual: null
+    };
+    emitir();
+    return { ok: true, msg: `Progreso restaurado: ${d.progreso.xp} XP y ${(d.progreso.resueltos || []).length} desafios.` };
+  } catch {
+    return { ok: false, msg: "No pude leer ese archivo. Revisa que sea el .json que exportaste." };
+  }
 }
 function set(parcial: Partial<Estado>) { estado = { ...estado, ...parcial }; emitir(); }
 function setProgreso(parcial: Partial<Progreso>) { set({ progreso: { ...estado.progreso, ...parcial } }); }
