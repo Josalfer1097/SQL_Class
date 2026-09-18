@@ -394,131 +394,158 @@ function CabelloFrontal({ estilo, color, oculto }: { estilo: string; color: stri
 }
 
 /* ============================================================
-   UMBRA — el Maestro encapuchado
+   UMBRA — el Archivista. Una parca, no una mascota.
    ============================================================ */
 export function Umbra({ size = 260, humor = "neutral" }: { size?: number; humor?: "neutral" | "feliz" | "burlon" | "serio" }) {
   const alto = (size * 300) / 240;
-  /* la mirada cambia con el humor: entrecerrada al burlarse, fina al reir, ancha al ponerse serio */
-  const ry = humor === "feliz" ? 1.8 : humor === "burlon" ? 2.4 : humor === "serio" ? 4.6 : 3.4;
-  const rx = humor === "serio" ? 8 : 7;
+  /* la mirada es lo unico vivo en toda la figura */
+  const ry = humor === "feliz" ? 1.6 : humor === "burlon" ? 2.2 : humor === "serio" ? 5.2 : 3.2;
+  const rx = humor === "serio" ? 8.5 : humor === "feliz" ? 6 : 7;
+  const inclina = humor === "burlon" ? 7 : humor === "serio" ? -4 : 0;
   return (
     <svg viewBox="0 0 240 300" width={size} height={alto} className="umbra" aria-label="Umbra, el Archivista">
       <defs>
-        <radialGradient id="umAura" cx="50%" cy="52%" r="52%">
-          <stop offset="0%" stopColor="#8B5CF6" stopOpacity=".5" />
-          <stop offset="55%" stopColor="#E0338A" stopOpacity=".16" />
-          <stop offset="100%" stopColor="#0A0710" stopOpacity="0" />
+        <radialGradient id="umAura" cx="50%" cy="54%" r="50%">
+          <stop offset="0%" stopColor="#4A1D6B" stopOpacity=".55" />
+          <stop offset="45%" stopColor="#3A0F28" stopOpacity=".28" />
+          <stop offset="100%" stopColor="#05030A" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="umOjo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFD6DC" />
-          <stop offset="30%" stopColor="#FF3B5C" />
-          <stop offset="100%" stopColor="#FF3B5C" stopOpacity="0" />
+          <stop offset="0%" stopColor="#FFE8EC" />
+          <stop offset="22%" stopColor="#FF2244" />
+          <stop offset="60%" stopColor="#8B0A1E" stopOpacity=".55" />
+          <stop offset="100%" stopColor="#8B0A1E" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="umTela" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#241733" />
-          <stop offset="55%" stopColor="#120B1C" />
-          <stop offset="100%" stopColor="#07040C" />
+          <stop offset="0%" stopColor="#170E22" />
+          <stop offset="45%" stopColor="#0B0713" />
+          <stop offset="100%" stopColor="#030208" />
         </linearGradient>
-        <linearGradient id="umBorde" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#8B5CF6" stopOpacity=".7" />
-          <stop offset="100%" stopColor="#E0338A" stopOpacity=".3" />
+        <linearGradient id="umFilo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#6D3FA8" stopOpacity=".5" />
+          <stop offset="60%" stopColor="#8B1538" stopOpacity=".22" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
         </linearGradient>
-        <filter id="umBlur"><feGaussianBlur stdDeviation="5" /></filter>
-        <filter id="umNiebla"><feGaussianBlur stdDeviation="9" /></filter>
+        <linearGradient id="umHueso" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#B9A9C4" />
+          <stop offset="100%" stopColor="#6E5C7E" />
+        </linearGradient>
+        <filter id="umBlur"><feGaussianBlur stdDeviation="4.5" /></filter>
+        <filter id="umNiebla"><feGaussianBlur stdDeviation="11" /></filter>
+        <filter id="umVacio"><feGaussianBlur stdDeviation="2.2" /></filter>
       </defs>
 
-      {/* aura */}
-      <ellipse className="aura" cx="120" cy="150" rx="82" ry="134" fill="url(#umAura)" />
+      {/* aura fria y opresiva */}
+      <ellipse className="aura" cx="120" cy="152" rx="86" ry="138" fill="url(#umAura)" />
 
-      {/* niebla en la base: la tunica no toca el suelo */}
-      <ellipse cx="120" cy="270" rx="44" ry="14" fill="#8B5CF6" opacity=".22" filter="url(#umNiebla)" />
-      <ellipse cx="120" cy="276" rx="26" ry="8" fill="#E0338A" opacity=".16" filter="url(#umNiebla)" />
+      {/* niebla baja: la figura no toca el suelo */}
+      <ellipse cx="120" cy="272" rx="50" ry="15" fill="#2A0F3E" opacity=".5" filter="url(#umNiebla)" />
+      <ellipse cx="120" cy="278" rx="30" ry="9" fill="#5A1830" opacity=".35" filter="url(#umNiebla)" />
 
-      {/* chispas ascendentes */}
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <circle key={i} className={"chispa c" + i} cx={78 + i * 17} cy={258 - (i % 3) * 30} r={1.6 + (i % 2) * 0.8} fill={i % 2 ? "#FF3B5C" : "#B794F6"} />
+      {/* motas que suben, lentas */}
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+        <circle key={i} className={"chispa c" + (i % 6)} cx={74 + i * 15} cy={262 - (i % 4) * 26} r={0.9 + (i % 3) * 0.6}
+          fill={i % 3 === 0 ? "#FF2244" : "#7A4FB0"} opacity=".8" />
       ))}
 
-      {/* ---------- silueta esbelta ----------
-          hombros estrechos y caidos, cuerpo largo, la tela se deshilacha abajo */}
+      {/* ---------- silueta: alta, estrecha, jirones afilados ---------- */}
       <path
-        d="M 120 56
-           C 109 56 103 66 100 80
-           C 96 100 92 120 90 146
-           C 88 176 87 210 86 240
-           L 92 266 L 97 242 L 103 268 L 108 240 L 114 270 L 120 244
-           L 126 270 L 132 240 L 137 268 L 143 242 L 148 266 L 154 240
-           C 153 210 152 176 150 146
-           C 148 120 144 100 140 80
-           C 137 66 131 56 120 56 Z"
+        d="M 120 54
+           C 108 54 102 65 99 79
+           C 95 100 91 121 89 148
+           C 87 179 86 212 85 242
+           L 90 272 L 95 240 L 100 276 L 105 238 L 111 280 L 117 242
+           L 123 278 L 129 240 L 134 274 L 140 238 L 145 270 L 151 240
+           C 152 212 153 179 151 148
+           C 149 121 145 100 141 79
+           C 138 65 132 54 120 54 Z"
         fill="url(#umTela)"
       />
-      {/* pliegues verticales que estilizan */}
-      <path d="M 108 92 C 104 150 102 206 103 246" stroke="#07040C" strokeWidth="1.8" fill="none" opacity=".8" />
-      <path d="M 132 92 C 136 150 138 206 137 246" stroke="#07040C" strokeWidth="1.8" fill="none" opacity=".8" />
-      <path d="M 120 104 L 120 244" stroke="#07040C" strokeWidth="1.4" fill="none" opacity=".55" />
-      {/* filo luminoso en el borde izquierdo */}
-      <path d="M 100 80 C 96 100 92 120 90 146 C 88 176 87 210 86 240" stroke="url(#umBorde)" strokeWidth="1.5" fill="none" />
+      {/* pliegues profundos */}
+      <path d="M 106 90 C 101 150 99 208 100 250" stroke="#020106" strokeWidth="2.4" fill="none" opacity=".9" />
+      <path d="M 134 90 C 139 150 141 208 140 250" stroke="#020106" strokeWidth="2.4" fill="none" opacity=".9" />
+      <path d="M 120 100 L 120 248" stroke="#020106" strokeWidth="1.8" fill="none" opacity=".7" />
+      <path d="M 113 118 C 110 170 110 214 112 246" stroke="#000" strokeWidth="1.2" fill="none" opacity=".5" />
+      <path d="M 127 118 C 130 170 130 214 128 246" stroke="#000" strokeWidth="1.2" fill="none" opacity=".5" />
+      {/* filo apenas iluminado, solo del lado izquierdo */}
+      <path d="M 99 79 C 95 100 91 121 89 148 C 87 179 86 212 85 242" stroke="url(#umFilo)" strokeWidth="1.8" fill="none" />
 
-      {/* brazos largos y huesudos que salen de mangas anchas */}
-      <path d="M 102 96 C 84 124 76 158 79 186" stroke="#0E0916" strokeWidth="13" strokeLinecap="round" fill="none" />
-      <path d="M 138 96 C 156 124 164 158 161 186" stroke="#0E0916" strokeWidth="13" strokeLinecap="round" fill="none" />
-      <ManoHuesuda x={79} y={190} flip={false} />
-      <ManoHuesuda x={161} y={190} flip={true} />
+      {/* brazos: mangas largas, casi sin volumen */}
+      <path d="M 101 94 C 84 124 77 162 81 194" stroke="#080511" strokeWidth="14" strokeLinecap="round" fill="none" />
+      <path d="M 139 94 C 156 124 163 162 159 194" stroke="#080511" strokeWidth="14" strokeLinecap="round" fill="none" />
+      <ManoHuesuda x={81} y={198} flip={false} />
+      <ManoHuesuda x={159} y={198} flip={true} />
 
-      {/* ---------- capucha alargada, casi un pico ---------- */}
+      {/* ---------- capucha profunda ---------- */}
       <path
-        d="M 120 12
-           C 101 17 90 40 89 70
-           C 88 87 91 99 95 109
-           L 145 109
-           C 149 99 152 87 151 70
-           C 150 40 139 17 120 12 Z"
-        fill="#1C1229"
+        d="M 120 10
+           C 99 15 87 40 86 72
+           C 85 90 88 103 93 112
+           L 147 112
+           C 152 103 155 90 154 72
+           C 153 40 141 15 120 10 Z"
+        fill="#120B1C"
       />
-      {/* interior: vacio absoluto */}
+      {/* el interior es un vacio, no una cara */}
       <path
-        d="M 120 27
-           C 106 32 99 52 98 75
-           C 97 89 100 99 104 107
-           L 136 107
-           C 140 99 143 89 142 75
-           C 141 52 134 32 120 27 Z"
-        fill="#05030A"
+        d="M 120 26
+           C 104 31 96 53 95 78
+           C 94 93 98 104 103 111
+           L 137 111
+           C 142 104 146 93 145 78
+           C 144 53 136 31 120 26 Z"
+        fill="#010004"
       />
-      {/* borde de la capucha con brillo tenue */}
-      <path d="M 95 109 C 102 99 138 99 145 109" stroke="url(#umBorde)" strokeWidth="1.3" fill="none" opacity=".8" />
-      {/* punta de la capucha caida hacia atras */}
-      <path d="M 120 12 C 133 5 148 12 153 27 C 144 19 131 16 120 19 Z" fill="#241733" />
+      <path d="M 120 32 C 107 37 101 56 100 78 C 99 91 102 101 106 108 L 134 108 C 138 101 141 91 140 78 C 139 56 133 37 120 32 Z"
+        fill="#000" filter="url(#umVacio)" opacity=".9" />
+      {/* borde del capuchon, tenue */}
+      <path d="M 93 112 C 96 60 104 34 120 30 C 136 34 144 60 147 112"
+        stroke="#3A2350" strokeWidth="1.6" fill="none" opacity=".8" />
+      {/* punta caida hacia atras */}
+      <path d="M 120 10 C 134 4 150 12 155 28 C 145 19 132 15 120 17 Z" fill="#1B1029" />
+      {/* jirones del capuchon sobre los hombros */}
+      <path d="M 93 106 Q 84 132 96 150 L 104 140 Q 95 126 99 108 Z" fill="#0B0713" />
+      <path d="M 147 106 Q 156 132 144 150 L 136 140 Q 145 126 141 108 Z" fill="#0B0713" />
 
-      {/* ---------- mirada ---------- */}
-      <ellipse cx="110" cy="72" rx="11" ry="7" fill="url(#umOjo)" filter="url(#umBlur)" opacity=".95" />
-      <ellipse cx="130" cy="72" rx="11" ry="7" fill="url(#umOjo)" filter="url(#umBlur)" opacity=".95" />
-      <g className="ojosUmbra">
-        <ellipse cx="110" cy="72" rx={rx} ry={ry} fill="#FF3B5C" />
-        <ellipse cx="130" cy="72" rx={rx} ry={ry} fill="#FF3B5C" />
-        <circle cx="111.5" cy="70.8" r="1.2" fill="#fff" opacity=".9" />
-        <circle cx="131.5" cy="70.8" r="1.2" fill="#fff" opacity=".9" />
+      {/* ---------- la mirada ---------- */}
+      <g transform={`rotate(${inclina} 120 70)`}>
+        <ellipse cx="110" cy="70" rx="13" ry="8" fill="url(#umOjo)" filter="url(#umBlur)" opacity=".95" />
+        <ellipse cx="130" cy="70" rx="13" ry="8" fill="url(#umOjo)" filter="url(#umBlur)" opacity=".95" />
+        <g className="ojosUmbra">
+          <ellipse cx="110" cy="70" rx={rx} ry={ry} fill="#FF2244" />
+          <ellipse cx="130" cy="70" rx={rx} ry={ry} fill="#FF2244" />
+          <ellipse cx="110" cy="70" rx={rx * 0.45} ry={ry * 0.5} fill="#FFD9DE" opacity=".9" />
+          <ellipse cx="130" cy="70" rx={rx * 0.45} ry={ry * 0.5} fill="#FFD9DE" opacity=".9" />
+        </g>
+        {/* rastro de luz que deja la mirada */}
+        <path d="M 101 76 Q 110 80 119 76" stroke="#8B0A1E" strokeWidth="1.2" fill="none" opacity=".45" />
+        <path d="M 121 76 Q 130 80 139 76" stroke="#8B0A1E" strokeWidth="1.2" fill="none" opacity=".45" />
       </g>
-      {humor === "burlon" && <path d="M 113 88 Q 120 93 127 86" stroke="#FF7A9A" strokeWidth="1.4" strokeLinecap="round" fill="none" opacity=".65" />}
-      {humor === "serio" && <path d="M 112 88 L 128 88" stroke="#FF7A9A" strokeWidth="1.4" strokeLinecap="round" opacity=".5" />}
 
-      {/* broche en el pecho */}
-      <circle cx="120" cy="118" r="4.5" fill="#FFB05C" />
-      <circle cx="120" cy="118" r="1.8" fill="#FF3B5C" />
+      {/* broche: un sello viejo, no un adorno brillante */}
+      <circle cx="120" cy="120" r="5.5" fill="#2A1A10" stroke="#7A5A28" strokeWidth="1.2" />
+      <circle cx="120" cy="120" r="1.8" fill="#8B0A1E" />
     </svg>
   );
 }
 
-/* mano descarnada: tres dedos largos asomando de la manga */
+/* mano descarnada: dedos finos que asoman de la manga, sin bloques solidos */
 function ManoHuesuda({ x, y, flip }: { x: number; y: number; flip: boolean }) {
   const s = flip ? -1 : 1;
   return (
-    <g transform={`translate(${x} ${y}) scale(${s} 1)`} opacity=".9">
-      <ellipse cx="0" cy="-2" rx="6.5" ry="5" fill="#0E0916" />
-      <path d="M -3 2 L -4 12" stroke="#C9A6F5" strokeWidth="2" strokeLinecap="round" />
-      <path d="M 0 3 L 0 14" stroke="#C9A6F5" strokeWidth="2" strokeLinecap="round" />
-      <path d="M 3 2 L 4 12" stroke="#C9A6F5" strokeWidth="1.8" strokeLinecap="round" />
+    <g transform={`translate(${x} ${y}) scale(${s} 1)`}>
+      {/* boca de la manga, oscura, por delante de la muneca */}
+      <path d="M -8 -6 q 8 -3 16 0 q -1 7 -3 9 q -5 2 -10 0 q -2 -2 -3 -9 Z" fill="#080511" />
+      {/* tres dedos largos, apenas iluminados */}
+      <path d="M -4.5 2 q -1.5 6 -0.5 11" stroke="#7E6C90" strokeWidth="1.9" strokeLinecap="round" fill="none" />
+      <path d="M 0 3 q 0 7 0.5 12" stroke="#8B7A9C" strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M 4.5 2 q 1.5 6 0.5 10" stroke="#7E6C90" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      {/* nudillos, puntos minimos */}
+      <circle cx="-5" cy="7" r="1" fill="#A594B2" opacity=".55" />
+      <circle cx="0.3" cy="8.5" r="1" fill="#A594B2" opacity=".55" />
+      <circle cx="5" cy="7" r=".9" fill="#A594B2" opacity=".55" />
+      {/* sombra que devuelve la mano a la penumbra */}
+      <ellipse cx="0" cy="9" rx="8" ry="7" fill="#05030A" opacity=".45" />
     </g>
   );
 }

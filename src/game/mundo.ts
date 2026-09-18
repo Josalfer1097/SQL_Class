@@ -127,62 +127,70 @@ export const UMBRA = {
   nombre: "Umbra",
   titulo: "Archivista del Umbral",
   saludos: [
-    "Ah. Otro que quiere hablar con las tablas. Pasa, pasa. No muerden. Yo si, pero poco.",
-    "Llegas tarde. No, no habia hora. Igual llegas tarde.",
-    "Bienvenido al Archivo. Aqui los datos no se pierden; se olvidan, que es peor."
+    "Otro que viene a hablar con las tablas. Adelante. Ellas no muerden.",
+    "Llegas tarde. No habia hora, pero llegas tarde.",
+    "Bienvenido al Archivo. Aqui los datos no se pierden: se olvidan, que es considerablemente peor.",
+    "Pasa. Toca lo que quieras. Total, lo unico irreversible aqui es el ridiculo."
   ],
   acierto: [
-    "Correcto. No te acostumbres, pero correcto.",
-    "Bien. Casi como si supieras lo que haces.",
-    "Exacto. Anotare esto en el registro de cosas que no esperaba.",
-    "Impecable. Voy a fingir que no estoy impresionado.",
-    "Eso. Justo eso. Sigue asi y me quedo sin sarcasmo, que seria una tragedia."
+    "Correcto. Tomo nota, por si vuelve a ocurrir.",
+    "Bien. Casi como si supieras lo que estabas haciendo.",
+    "Exacto. Lo anoto en el registro de cosas que no vi venir.",
+    "Funciona. Y ademas era lo que te pedi, que es un detalle que mucha gente pasa por alto.",
+    "Correcto. Empiezo a sospechar que esto no fue suerte.",
+    "Eso era. Sigue asi y me voy a quedar sin material."
   ],
   aciertoLimpio: [
-    "Correcto y bien escrito. Dos cosas a la vez. Estoy... conmovido, dentro de lo que cabe.",
-    "Ni una nota que hacerte. Desconfio, pero acepto."
+    "Correcto y bien escrito. Dos cosas a la vez. No sabria decir cual me sorprende mas.",
+    "Ni una nota que hacerte. Voy a revisarlo otra vez, por costumbre.",
+    "Impecable. Es la clase de consulta que uno puede dejar en produccion y dormir."
   ],
   fallo: [
-    "No. Pero no es la peor forma de equivocarse que he visto hoy.",
-    "Casi. Y 'casi' en SQL es exactamente igual a 'no'.",
-    "Mmm. La base te esta diciendo algo. Escuchala; yo ya la escuche.",
-    "Eso no era. Pero tampoco borraste nada, asi que vamos bien.",
-    "Fallaste. Bienvenido al club; tiene millones de miembros."
+    "No. Pero he visto formas peores de equivocarse, y algunas esta misma semana.",
+    "Casi. Y en SQL, casi es un sinonimo elegante de no.",
+    "La base te esta diciendo algo. Yo ya lo escuche; te toca a ti.",
+    "Eso no era. Lo bueno es que no borraste nada, que era mi principal preocupacion.",
+    "Fallaste. Es normal: este idioma tiene la costumbre de parecer obvio hasta que lo escribes.",
+    "No es eso. Pero vas en una direccion; solo que no es esta."
   ],
   error: [
-    "Eso ni siquiera corrio. La sintaxis es lo minimo que te pido, y ya ves.",
-    "El motor te escupio un error. Leelo: los errores son cartas de amor con mala ortografia.",
-    "No compila, no ejecuta, no existe. Pero todo se arregla."
+    "Eso ni siquiera llego a correr. La sintaxis es el requisito minimo, y hoy no lo cumplimos.",
+    "El motor te devolvio un error. Leelo con calma: son cartas de amor mal redactadas.",
+    "No compila, no ejecuta, no existe. Los tres estados del SQL apresurado.",
+    "Hay un error ahi. Y a diferencia de mi, el motor te esta diciendo exactamente donde."
   ],
   pista1: [
-    "Te empujo en la direccion correcta. Nada mas.",
+    "Te empujo en la direccion correcta. Nada mas que eso.",
     "Una idea, no una respuesta. Cobro poco, pero cobro.",
-    "Ahi va la primera. Todavia tienes que pensar."
+    "Ahi va la primera. Sigue siendo tu turno de pensar."
   ],
   pista2: [
-    "Segunda pista. Ahora si te digo que herramienta usar.",
-    "Esta te cuesta mas, y con razon: ya es casi el camino.",
-    "Te nombro las piezas. Armarlas sigue siendo tu trabajo."
+    "Segunda pista. Ahora si te digo que herramienta buscar.",
+    "Esta cuesta mas, y con razon: ya es medio camino andado.",
+    "Te nombro las piezas. Armarlas continua siendo trabajo tuyo."
   ],
   pista3: [
-    "Ultima pista, y es la cara. Te doy la forma con huecos; los huecos son tuyos.",
-    "Hasta aqui llego mi generosidad. Lo demas lo escribes tu.",
-    "Te dejo el molde. Si tambien quieres el contenido, eso ya es la solucion, y esa cuesta mas."
+    "Ultima pista, y es la cara. Te doy la forma con huecos; los huecos son asunto tuyo.",
+    "Hasta aqui llega mi generosidad, que nunca fue muy lejos.",
+    "Te dejo el molde. Si tambien quieres el contenido, eso ya se llama solucion y tiene otro precio."
   ],
   sinPistas: [
-    "Ya no hay mas pistas. Tres son suficientes para cualquiera, incluso para ti.",
-    "Se acabaron. La siguiente puerta que puedo abrirte es la solucion completa, y sale cara."
+    "Ya no hay mas pistas. Tres alcanzan para cualquiera, y sospecho que para ti tambien.",
+    "Se acabaron. Lo siguiente que puedo abrirte es la solucion completa, y no sale barata."
   ],
   solucion: [
-    "Aqui tienes la solucion. Escribela tu, no la copies: copiar no deja callo en los dedos.",
-    "Toma. Y luego cierrala y hazla de memoria, o no cuenta."
+    "Aqui tienes. Escribela tu, no la copies: copiar no deja callo en los dedos.",
+    "Toma. Y despues cierrala y hazla de memoria, o no cuenta.",
+    "La solucion. Mirarla ensena bastante menos de lo que uno cree."
   ],
   jefeIntro: [
-    "Este es el jefe del reino. No hay pista barata aqui.",
-    "Ultimo desafio de esta tierra. Si lo pasas, te dejo cruzar. Si no, tambien, pero con menos dignidad."
+    "Este es el jefe del reino. Aqui no vendo pistas, ni por XP ni por insistencia.",
+    "Ultimo desafio de esta tierra. Si lo pasas, cruzas. Si no, tambien, pero con menos elegancia.",
+    "El jefe. Todo lo que aprendiste en este reino cabe en esta consulta."
   ],
   sinXp: [
-    "No te alcanza el XP para eso. Resuelve algo primero y despues me pides favores."
+    "No te alcanza el XP. Resuelve algo primero y despues volvemos a negociar.",
+    "Con ese saldo no. El conocimiento es gratis; las pistas, no tanto."
   ]
 };
 

@@ -51,15 +51,15 @@ kbd{font-family:var(--mono);font-size:10.5px;background:rgba(0,0,0,.34);border:1
 .avatar .ojos{animation:parpadeo 5s infinite}
 @keyframes parpadeo{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 .avatar .ojos{transform-origin:100px 78px}
-.umbra{animation:levitar 5s ease-in-out infinite;filter:drop-shadow(0 0 22px rgba(139,92,246,.35))}
-@keyframes levitar{50%{transform:translateY(-8px)}}
-.umbra .aura{animation:aura 3.2s ease-in-out infinite alternate;transform-origin:120px 165px}
-@keyframes aura{from{opacity:.75;transform:scale(1)}to{opacity:1;transform:scale(1.07)}}
-.umbra .ojosUmbra{animation:brillo 2.2s ease-in-out infinite alternate}
-@keyframes brillo{from{filter:drop-shadow(0 0 3px #FF3B5C)}to{filter:drop-shadow(0 0 10px #FF3B5C) drop-shadow(0 0 20px rgba(255,59,92,.6))}}
-.umbra .chispa{animation:chispa 3.6s ease-in-out infinite;opacity:0}
-.umbra .c1{animation-delay:.6s}.umbra .c2{animation-delay:1.2s}.umbra .c3{animation-delay:1.8s}.umbra .c4{animation-delay:2.4s}.umbra .c5{animation-delay:3s}
-@keyframes chispa{0%{transform:translateY(0);opacity:0}20%{opacity:.9}100%{transform:translateY(-70px);opacity:0}}
+.umbra{animation:levitar 7s ease-in-out infinite;filter:drop-shadow(0 0 26px rgba(74,29,107,.5)) drop-shadow(0 0 60px rgba(139,10,30,.22))}
+@keyframes levitar{50%{transform:translateY(-6px)}}
+.umbra .aura{animation:aura 5.5s ease-in-out infinite alternate;transform-origin:120px 152px}
+@keyframes aura{from{opacity:.6;transform:scale(.97)}to{opacity:1;transform:scale(1.09)}}
+.umbra .ojosUmbra{animation:brillo 3.4s ease-in-out infinite alternate}
+@keyframes brillo{from{filter:drop-shadow(0 0 2px #FF2244);opacity:.85}to{filter:drop-shadow(0 0 12px #FF2244) drop-shadow(0 0 28px rgba(255,34,68,.75));opacity:1}}
+.umbra .chispa{animation:chispa 6s ease-in-out infinite;opacity:0}
+.umbra .c1{animation-delay:1s}.umbra .c2{animation-delay:2s}.umbra .c3{animation-delay:3s}.umbra .c4{animation-delay:4s}.umbra .c5{animation-delay:5s}
+@keyframes chispa{0%{transform:translateY(0) scale(1);opacity:0}20%{opacity:.9}100%{transform:translateY(-70px);opacity:0}}
 
 .burbuja{position:relative;background:var(--panel2);border:1px solid var(--edge);border-radius:14px;padding:11px 14px;max-width:420px}
 .burbuja::before{content:"";position:absolute;top:-8px;left:26px;width:14px;height:14px;background:var(--panel2);border-left:1px solid var(--edge);border-top:1px solid var(--edge);transform:rotate(45deg)}
